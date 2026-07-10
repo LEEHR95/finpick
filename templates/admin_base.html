@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}관리자 콘솔 · {{ bank_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.svg') }}">
+</head>
+<body class="admin-body">
+  <!-- 관리자 콘솔 전용 헤더 (고객용 네비 없음) -->
+  <header class="admin-top"><div class="container">
+    <div class="admin-brand">
+      <img class="admin-brand-logo" src="{{ url_for('static', filename='img/logo-finpick-en.png') }}" alt="FinPick">
+      <span class="admin-brand-tag">관리자 콘솔</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="admin-top-auth">
+      {% if current_user %}<span class="admin-who">{{ current_user.name }}님</span>{% endif %}
+      <a href="{{ url_for('index') }}" class="btn btn-ghost">사이트로 이동</a>
+      <a href="{{ url_for('logout') }}" class="btn btn-ghost">로그아웃</a>
+    </div>
+  </div></header>
+
+  <!-- 플래시 메시지 -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="flash">
+      {% for cat, msg in messages %}<div class="msg {{ cat }}">{{ msg }}</div>{% endfor %}
+    </div>{% endif %}
+  {% endwith %}
+
+  {% block body %}{% endblock %}
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

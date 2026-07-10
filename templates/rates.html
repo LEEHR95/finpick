@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}금리 대시보드 · {{ bank_name }}{% endblock %}
+{% block body %}
+<section class="section"><div class="container">
+  <div class="sec-head">
+    <div>
+      <span class="sec-badge">금융감독원 공시 · 실시간</span>
+      <h2>금리 대시보드</h2>
+      <p class="sub">검색엔진(Elasticsearch)에 색인된 전 상품군·종류의 금리를 한눈에 확인하세요.</p>
+    </div>
+    <a href="{{ url_for('products') }}" class="more-link">상품 비교하기 →</a>
+  </div>
+
+  <!-- 요약 카드 -->
+  <div class="cards" style="margin-bottom:26px">
+    <div class="card">
+      <span class="tag">한국은행 기준금리</span>
+      <div class="big">{{ base_rate or '–' }}<small> %</small></div>
+    </div>
+    <div class="card">
+      <span class="tag">색인된 총 상품 수</span>
+      <div class="big">{{ '{:,}'.format(total) }}<small> 건</small></div>
+    </div>
+    <div class="card">
+      <span class="tag">상품군 / 종류</span>
+      <div class="big">{{ groups|length }}<small> 군 · {{ types|length }} 종류</small></div>
+    </div>
+  </div>
+
+  <!-- 상품군(fin_grp_nm)별 분포 -->
+  <div class="panel">
+    <h3>상품군별 색인 현황</h3>
+    {% for g in groups %}
+    <div class="dash-bar-row">
+      <span class="dash-bar-label">{{ g.name }}</span>
+      <div class="dash-bar"><div class="dash-bar-fill" style="width:{{ g.pct }}%"></div></div>
+      <b class="dash-bar-count">{{ '{:,}'.format(g.count) }}건</b>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- 종류(product_type)별 대표금리 -->
+  <div class="sec-head" style="margin:32px 0 16px">
+    <div>
+      <h3 style="margin:0">종류별 금리 현황</h3>
+      <p class="sub" style="margin:0">예적금은 최고금리, 대출은 최저금리, 연금저축은 평균 공시이율 기준이에요.</p>
+    </div>
+  </div>
+  <div class="cards">
+    {% for t in types %}
+    <div class="card">
+      <span class="tag">{{ t.type }} · {{ t.count }}건</span>
+      {% if t.stats %}
+      <h3>{{ t.kind_label }}</h3>
+      <div class="big {{ 'money-out-c' if t.kind == 'low' }}">{{ '%.2f'|format(t.rep) }}<small> %</small></div>
+      <div class="co" style="margin-top:8px">
+        평균 {{ '%.2f'|format(t.stats.avg) }}% · 최고 {{ '%.2f'|format(t.stats.max) }}% · 최저 {{ '%.2f'|format(t.stats.min) }}%
+      </div>
+      {% else %}
+      <h3>{{ t.kind_label }}</h3>
+      <div class="co" style="margin-top:10px">집계할 금리 데이터가 없어요.</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- 핀픽 펀드 금리 -->
+  {% if funds %}
+  <div class="sec-head" style="margin:32px 0 16px">
+    <div>
+      <h3 style="margin:0">핀픽 펀드 금리</h3>
+      <p class="sub" style="margin:0">FinPick 자체 투자상품의 목표 수익률이에요. (공시 데이터가 아닌 자체 상품)</p>
+    </div>
+    <a href="{{ url_for('products', cat='펀드') }}" class="more-link">펀드 보러가기 →</a>
+  </div>
+  <div class="cards">
+    {% for f in funds %}
+    <div class="card">
+      <span class="tag">펀드</span>
+      <h3>{{ f.name }}</h3>
+      <div class="co">{{ f.sub }}</div>
+      <div class="big">{{ '%.2f'|format(f.rate) }}<small> % (목표)</small></div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div></section>
+{% endblock %}

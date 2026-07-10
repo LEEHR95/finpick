@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+{% block title %}경제공부 · {{ bank_name }}{% endblock %}
+{% block body %}
+
+<!-- 픽앤업 광고 배너 (읽고 Pick → 포인트·우대금리 Up) -->
+<section class="pu-hero"><div class="container pu-hero-inner {{ '' if current_user else 'solo' }}">
+  <div class="pu-hero-copy">
+    <span class="pu-badge">Pick &amp; Up · 경제공부 리워드</span>
+    <h1>읽을수록<br>포인트가 오른다</h1>
+    <p>경제 카드로 <b class="pu-em">배우고</b> 퀴즈를 풀면 포인트 적립.<br>
+       모아서 우대금리까지 <b class="pu-em">올려요</b>.</p>
+  </div>
+  {% if current_user %}
+  <div class="pu-hero-visual">
+    <div class="pu-point-chip">
+      <div class="pu-point-row">
+        <img class="pu-point-icon" src="{{ url_for('static', filename='img/ic-pickup.png') }}" alt="픽앤업">
+        <div class="pu-point-label">내<br>포인트</div>
+        <div class="pu-point-val"><b id="pointVal">{{ '{:,}'.format(points) }}</b><small>P</small></div>
+      </div>
+      {% if streak > 0 %}
+      <div class="pu-streak">{{ streak }}일 연속 학습 중</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div></section>
+
+<!-- 학습 탭 (정보를 위로) -->
+<section class="section" id="tab-learn"><div class="container">
+  <div class="sec-head">
+    <div>
+      <h2>오늘의 학습</h2>
+      <p class="sub">돈의 흐름은 서로 연결돼 있어요. 카드를 넘기며 관계를 읽어보세요.</p>
+    </div>
+  </div>
+
+  <div class="carousel" id="learnCarousel">
+    <button class="car-arrow prev" type="button" aria-label="이전 카드" onclick="learnCar && learnCar.prev()"><i></i></button>
+    <div class="car-viewport">
+      <div class="car-track" id="learnTrack">
+        {% for c in cards %}
+        {% set relcls = 'same' if c.rel=='같은 방향' else ('opp' if c.rel=='반대 방향' else ('safe' if c.rel=='안전자산 선호' else '')) %}
+        <div class="car-slide">
+          <div class="lcard">
+            <span class="lc-rel {{ relcls }}">
+              {% if relcls == 'same' %}
+              <svg class="lc-ic" viewBox="0 0 20 14" width="17" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12V3M2.5 5.5 5 3 7.5 5.5"/><path d="M14 12V3M11.5 5.5 14 3 16.5 5.5"/></svg>
+              {% elif relcls == 'opp' %}
+              <svg class="lc-ic" viewBox="0 0 20 14" width="17" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12V3M2.5 5.5 5 3 7.5 5.5"/><path d="M14 2v9M11.5 8.5 14 11 16.5 8.5"/></svg>
+              {% elif relcls == 'safe' %}
+              <svg class="lc-ic" viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M7 1 12 3v4c0 3-2.5 5.5-5 6-2.5-.5-5-3-5-6V3z"/></svg>
+              {% endif %}
+              {{ c.rel }}
+            </span>
+            <div class="lcard-flow">
+              <span class="lc-a">{{ c.a }}</span>
+              <span class="lc-arrow">→</span>
+              <span class="lc-b">{{ c.b }}</span>
+            </div>
+            <p class="lcard-why">{{ c.why }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <button class="car-arrow next" type="button" aria-label="다음 카드" onclick="learnCar && learnCar.next()"><i></i></button>
+    <div class="car-dots" id="learnDots"></div>
+  </div>
+
+  <div class="learn-reward-bar">
+    {% if not current_user %}
+      <a href="{{ url_for('login', next=url_for('learn')) }}" class="btn btn-primary btn-lg">로그인하고 포인트 받기</a>
+    {% else %}
+      <button class="btn btn-primary btn-lg" id="learnStartBtn" onclick="startCardQuiz()">학습하고 포인트 받기</button>
+    {% endif %}
+  </div>
+</div></section>
+
+<!-- 오늘의 주가 예측 (모의 투자와 연결) -->
+<section class="section" style="padding-top:0"><div class="container">
+  <div class="sec-head">
+    <div>
+      <h2>오늘의 주가 예측</h2>
+      <p class="sub">내일 오를지 내릴지 예측하고, 맞히면 +{{ predict_reward }}P! 모은 포인트로 모의 주식도 살 수 있어요.</p>
+    </div>
+    <a href="{{ url_for('invest') }}" class="more-link">모의 투자 더보기 →</a>
+  </div>
+  <div class="panel" id="predictPanel">
+    {% for s in predict_stocks %}
+    <div class="info-row" id="predict-row-{{ s.code }}">
+      <span><b>{{ s.name }}</b> <span class="grp">{{ s.market }} · {{ '{:,}'.format(s.price) }}원</span></span>
+      {% if not current_user %}
+      <a href="{{ url_for('login', next=url_for('learn')) }}" class="more-link">로그인하고 예측</a>
+      {% elif predicted_today.get(s.code) %}
+      <b class="sub">{{ '상승' if predicted_today[s.code] == 'up' else '하락' }} 예측 완료</b>
+      {% else %}
+      <span>
+        <button class="btn btn-ghost" style="padding:6px 12px;font-size:13px" onclick="predict('{{ s.code }}','up')">상승</button>
+        <button class="btn btn-ghost" style="padding:6px 12px;font-size:13px" onclick="predict('{{ s.code }}','down')">하락</button>
+      </span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div></section>
+
+<!-- 학습 확인 퀴즈 (버튼 누르면 표시) -->
+<section class="section" id="tab-quiz" style="display:none"><div class="container">
+  <div class="sec-head">
+    <div>
+      <h2>학습 확인 퀴즈</h2>
+      <p class="sub">방금 본 카드의 관계를 맞혀보세요. 정답마다 +{{ quiz_reward }}P 적립돼요.</p>
+    </div>
+    <a href="#" class="more-link" onclick="backToLearn();return false;">← 학습 카드 다시 보기</a>
+  </div>
+
+  <div id="quizStage"></div>
+</div></section>
+
+<!-- 머니 전환 안내 (정보 아래로 이동) -->
+{% if current_user %}
+<section class="section" style="padding-top:0"><div class="container">
+  <div class="promo-banner">
+    <div class="pb-copy">
+      <b>모은 포인트, 현금으로 바꾸기</b>
+      <span>포인트를 입출금 통장에 넣고 잔액에 따라 우대금리도 받아보세요.</span>
+    </div>
+    <a href="{{ url_for('pickup_money') }}" class="btn btn-primary">머니 전환하러 가기</a>
+  </div>
+</div></section>
+{% endif %}
+
+<!-- 퀴즈 결과 팝업 -->
+<div class="quiz-modal" id="quizResultModal">
+  <div class="quiz-modal-box">
+    <h3>퀴즈 완료!</h3>
+    <div id="resultStats"></div>
+    <div class="quiz-modal-actions">
+      <button class="btn btn-ghost" onclick="backToLearn()">학습으로</button>
+      <button class="btn btn-primary" onclick="retryQuiz()">다시 풀기</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const LOGGED_IN = {{ 'true' if current_user else 'false' }};
+  const LOGIN_URL = "{{ url_for('login', next=url_for('learn')) }}";
+  const QUIZ_DATA = {{ quiz | tojson }};
+  const QUIZ_ADVANCE_DELAY = 1400;
+
+  // ── 오늘의 학습 캐러셀 (가운데 카드 강조 + 양옆 살짝 + 화살표/스와이프/점) ──
+  let learnCar = null;
+  function makeCarousel(rootId, trackId, dotsId){
+    const track = document.getElementById(trackId);
+    const dots  = document.getElementById(dotsId);
+    if(!track) return null;
+    const vp = track.parentElement;                 // .car-viewport
+    const slides = Array.prototype.slice.call(track.children);
+    let idx = 0;
+    slides.forEach((_, i)=>{
+      const d = document.createElement('button');
+      d.className = 'car-dot'; d.type = 'button';
+      d.addEventListener('click', ()=>go(i));
+      dots.appendChild(d);
+    });
+    function update(){
+      const s = slides[idx];
+      const offset = s.offsetLeft - (vp.clientWidth - s.clientWidth)/2;
+      track.style.transform = 'translateX(' + (-offset) + 'px)';
+      slides.forEach((el,i)=>el.classList.toggle('active', i===idx));
+      Array.prototype.slice.call(dots.children).forEach((d,i)=>d.classList.toggle('on', i===idx));
+    }
+    function go(i){ idx = Math.max(0, Math.min(slides.length-1, i)); update(); }
+    // 스와이프(터치) + 드래그(마우스)
+    let startX = 0, dragging = false;
+    vp.addEventListener('touchstart', e=>{ startX = e.touches[0].clientX; dragging = true; }, {passive:true});
+    vp.addEventListener('touchend',   e=>{ if(!dragging)return; dragging=false;
+      const dx = e.changedTouches[0].clientX - startX; if(dx<-40) go(idx+1); else if(dx>40) go(idx-1); });
+    vp.addEventListener('mousedown',  e=>{ startX = e.clientX; dragging = true; });
+    window.addEventListener('mouseup',e=>{ if(!dragging)return; dragging=false;
+      const dx = e.clientX - startX; if(dx<-40) go(idx+1); else if(dx>40) go(idx-1); });
+    window.addEventListener('resize', update);
+    update();
+    return { prev:()=>go(idx-1), next:()=>go(idx+1), go, refresh:update };
+  }
+
+  // "학습하고 포인트 받기" → 학습 카드를 감추고(오픈북 방지) 퀴즈 표시 + 시작
+  function startCardQuiz(){
+    if(!LOGGED_IN){ location.href = LOGIN_URL; return; }
+    document.getElementById('tab-learn').style.display = 'none';
+    document.getElementById('tab-quiz').style.display = '';
+    qPos = 0; qScore = 0; qDone = 0; sessionPoints = 0;
+    renderQuizStage();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  // 퀴즈 → 학습 카드로 복귀
+  function backToLearn(){
+    closeQuizResult();
+    document.getElementById('tab-quiz').style.display = 'none';
+    document.getElementById('tab-learn').style.display = '';
+    if(learnCar) learnCar.refresh();   // 다시 보일 때 캐러셀 위치 재계산
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  function setPoints(v){
+    document.getElementById('pointVal').textContent = v.toLocaleString();
+  }
+
+  async function reward(payload){
+    const r = await fetch("{{ url_for('learn_reward') }}", {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if(r.status===401 || r.redirected){ location.href = LOGIN_URL; return null; }
+    return r.json();
+  }
+
+  async function predict(code, guess){
+    const r = await fetch("{{ url_for('learn_predict') }}", {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({code, guess})
+    });
+    if(r.status===401 || r.redirected){ location.href = LOGIN_URL; return; }
+    const data = await r.json();
+    if(!data.ok){ alert(data.message); return; }
+    const row = document.getElementById('predict-row-' + code);
+    if(row){
+      const label = guess === 'up' ? '상승' : '하락';
+      row.querySelector('span:last-child').outerHTML = '<b class="sub">' + label + ' 예측 완료</b>';
+    }
+  }
+
+  let quizStarted = false;
+  let qPos = 0, qScore = 0, qDone = 0, sessionPoints = 0;
+
+  function initQuiz(){
+    if(quizStarted) return;
+    quizStarted = true;
+    renderQuizStage();
+  }
+
+  function retryQuiz(){
+    qPos = 0; qScore = 0; qDone = 0; sessionPoints = 0;
+    closeQuizResult();
+    renderQuizStage();
+  }
+
+  function renderQuizStage(){
+    const stage = document.getElementById('quizStage');
+    if(qPos >= QUIZ_DATA.length){ showQuizResult(); return; }
+    const q = QUIZ_DATA[qPos];
+    stage.innerHTML = `
+      <div class="qprogress">문제 ${qPos+1} / ${QUIZ_DATA.length} · 맞힌 개수 ${qScore} / ${qDone}</div>
+      <div class="qcard">
+        <div class="qq">${q.q}</div>
+        <div class="qopts">
+          ${q.opts.map((opt,i)=>`<button class="qopt" data-i="${i}">${opt}</button>`).join('')}
+        </div>
+        <div class="qfeedback" id="qfb"></div>
+      </div>`;
+    stage.querySelectorAll('.qopt').forEach(btn=>{
+      btn.addEventListener('click', ()=>handleAnswer(parseInt(btn.dataset.i, 10)));
+    });
+  }
+
+  async function handleAnswer(choice){
+    if(!LOGGED_IN){ location.href = LOGIN_URL; return; }
+    const stage = document.getElementById('quizStage');
+    stage.querySelectorAll('.qopt').forEach(b=>b.disabled=true);
+
+    const j = await reward({kind:'quiz', qid:qPos, choice:choice});
+    if(!j){ return; }
+    setPoints(j.points);
+    qDone++;
+    if(j.correct) qScore++;
+    sessionPoints += (j.awarded || 0);
+
+    const opts = stage.querySelectorAll('.qopt');
+    opts[j.answer].classList.add('correct');
+    if(!j.correct){ opts[choice].classList.add('wrong'); }
+    const fb = document.getElementById('qfb');
+    fb.className = 'qfeedback show ' + (j.correct?'ok':'no');
+    fb.innerHTML = '<b>'+j.message+'</b><span class="qexp">'+j.exp+'</span>';
+
+    setTimeout(()=>{ qPos++; renderQuizStage(); }, QUIZ_ADVANCE_DELAY);
+  }
+
+  function showQuizResult(){
+    document.getElementById('quizStage').innerHTML = '';
+    const total = QUIZ_DATA.length;
+    const rate = total ? Math.round(qScore/total*100) : 0;
+    document.getElementById('resultStats').innerHTML = `
+      <div class="rline">정답 <b class="ok">${qScore}</b>개 · 오답 <b class="no">${qDone-qScore}</b>개</div>
+      <div class="rline">정답률 <b>${rate}%</b></div>
+      <div class="rline">이번 판 적립 포인트 <b class="ok">+${sessionPoints}P</b></div>`;
+    document.getElementById('quizResultModal').classList.add('show');
+  }
+
+  function closeQuizResult(){
+    document.getElementById('quizResultModal').classList.remove('show');
+  }
+
+  // 학습 캐러셀 초기화 (이미지 로드 후 폭이 바뀔 수 있어 load에서도 한 번 더 보정)
+  learnCar = makeCarousel('learnCarousel', 'learnTrack', 'learnDots');
+  window.addEventListener('load', ()=>{ if(learnCar) learnCar.refresh(); });
+</script>
+{% endblock %}

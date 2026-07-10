@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block body %}
+
+<!-- 히어로: 좌 카피/검색 + 우 로그인(또는 내 계좌) -->
+<section class="hero"><div class="container hero-grid">
+  <div class="hero-copy">
+    <div class="hero-carousel" id="heroCarousel">
+      <div class="hero-slide active">
+        <div class="hero-title-row">
+          <h1>금리부터 챗봇까지,<br>똑똑한 금융생활 FinPick</h1>
+          <img class="hero-slide-icon" src="{{ url_for('static', filename='img/ic-deposit.png') }}" alt="">
+        </div>
+        <p>예금·적금·대출 상품을 자연어로 검색하고 한 번에 비교하세요.</p>
+        <form class="hero-search" action="{{ url_for('products') }}" method="get">
+          <input name="q" placeholder="예) 안전하게 목돈 굴리기 좋은 예금">
+          <button class="btn btn-primary btn-lg" type="submit">검색</button>
+        </form>
+      </div>
+      <div class="hero-slide">
+        <div class="hero-title-row">
+          <h1>검색부터 상담까지,<br>AI 상담원과 한 번에</h1>
+          <img class="hero-slide-icon" src="{{ url_for('static', filename='img/ic-chat.png') }}" alt="">
+        </div>
+        <p>예금·적금·대출 상품이나 금리가 궁금하면 AI 상담원에게 바로 물어보세요.</p>
+        <div class="hero-suggests">
+          <button type="button" class="hero-suggest" onclick="askChat('안전하게 목돈 굴리기 좋은 예금 추천해줘')">안전한 예금 추천</button>
+          <button type="button" class="hero-suggest" onclick="askChat('지금 대출 금리 제일 낮은 상품 알려줘')">낮은 대출 금리</button>
+        </div>
+        <button type="button" class="btn btn-primary btn-lg" onclick="toggleChat()">AI 상담원과 상담하기</button>
+      </div>
+    </div>
+    <div class="hero-nav">
+      <button type="button" class="hero-arrow" id="heroPrev" aria-label="이전">‹</button>
+      <div class="hero-dots" id="heroDots"></div>
+      <button type="button" class="hero-arrow" id="heroNext" aria-label="다음">›</button>
+    </div>
+  </div>
+
+  <div class="hero-box">
+    <div class="hb-label">📈 오늘의 금리</div>
+    <div class="rate-row">
+      <span>한국은행 기준금리</span>
+      <b class="rate-v">{{ base_rate or '–' }}%</b>
+    </div>
+    {% if cards %}
+    <div class="rate-row">
+      <span>최고 정기예금 (12개월)</span>
+      <b class="rate-v hl">{{ '%.2f'|format(cards[0].rate) }}%</b>
+    </div>
+    <div class="rate-sub">{{ cards[0].co }} · {{ cards[0].name }}</div>
+    {% endif %}
+    <div class="rate-row">
+      <span>코스피</span>
+      <b class="rate-v">{{ '{:,.2f}'.format(market.KOSPI.value) }}
+        <small class="{{ 'amt-in' if market.KOSPI.change_pct > 0 else ('amt-out' if market.KOSPI.change_pct < 0 else '') }}">{{ '+' if market.KOSPI.change_pct > 0 else '' }}{{ market.KOSPI.change_pct }}%</small></b>
+    </div>
+    <div class="rate-row">
+      <span>코스닥</span>
+      <b class="rate-v">{{ '{:,.2f}'.format(market.KOSDAQ.value) }}
+        <small class="{{ 'amt-in' if market.KOSDAQ.change_pct > 0 else ('amt-out' if market.KOSDAQ.change_pct < 0 else '') }}">{{ '+' if market.KOSDAQ.change_pct > 0 else '' }}{{ market.KOSDAQ.change_pct }}%</small></b>
+    </div>
+    <div class="rate-row">
+      <span>원/달러 환율</span>
+      <b class="rate-v">{{ '{:,.1f}'.format(market.FX.value) }}원</b>
+    </div>
+    <a href="{{ url_for('invest') }}" class="btn btn-primary btn-block" style="margin-top:18px">모의 투자 하러가기</a>
+  </div>
+</div></section>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('#heroCarousel .hero-slide'));
+  var dotsBox = document.getElementById('heroDots');
+  if(!slides.length || !dotsBox) return;
+  var idx = 0, timer = null;
+  slides.forEach(function(_, i){
+    var d = document.createElement('span');
+    d.className = 'hero-dot' + (i===0 ? ' active' : '');
+    d.onclick = function(){ go(i); restart(); };
+    dotsBox.appendChild(d);
+  });
+  var dots = Array.prototype.slice.call(dotsBox.children);
+  function go(i){
+    idx = (i + slides.length) % slides.length;
+    slides.forEach(function(s, j){ s.classList.toggle('active', j===idx); });
+    dots.forEach(function(d, j){ d.classList.toggle('active', j===idx); });
+  }
+  function restart(){
+    if(timer) clearInterval(timer);
+    timer = setInterval(function(){ go(idx+1); }, 5000);
+  }
+  var prevBtn = document.getElementById('heroPrev');
+  var nextBtn = document.getElementById('heroNext');
+  if(prevBtn) prevBtn.onclick = function(){ go(idx-1); restart(); };
+  if(nextBtn) nextBtn.onclick = function(){ go(idx+1); restart(); };
+  restart();
+})();
+</script>
+
+<!-- 빠른 메뉴 바 (히어로에 살짝 겹침) -->
+<div class="container"><nav class="quickbar">
+  <a href="{{ url_for('accounts') }}"><img class="qi-img" src="{{ url_for('static', filename='img/ic-account.png') }}" alt="">계좌</a>
+  <a href="{{ url_for('transfer') }}"><img class="qi-img" src="{{ url_for('static', filename='img/ic-transfer.png') }}" alt="">이체</a>
+  <a href="{{ url_for('products', cat='예금') }}"><img class="qi-img" src="{{ url_for('static', filename='img/ic-deposit.png') }}" alt="">예적금</a>
+  <a href="{{ url_for('products', cat='대출') }}"><img class="qi-img" src="{{ url_for('static', filename='img/ic-loan.png') }}" alt="">대출</a>
+  <a href="{{ url_for('learn') }}"><img class="qi-img" src="{{ url_for('static', filename='img/ic-pickup.png') }}" alt="">픽앤업</a>
+</nav></div>
+
+<!-- 경제공부 → 포인트머니 통장 소개: FinPick만의 리워드 구조, 홈 상단에 강조 -->
+<section class="section"><div class="container">
+  <div class="sec-head">
+    <div>
+      <span class="sec-badge">경제공부 리워드</span>
+      <h2>공부할수록 오르는 금리, FinPick에만 있어요</h2>
+      <p class="sub">경제공부 한 걸음마다 포인트가 쌓이고, 실제 우대금리·투자로 이어져요.</p>
+    </div>
+    <a href="{{ url_for('learn') }}" class="more-link">경제공부 하러가기 →</a>
+  </div>
+  <div class="cards learn-steps">
+    <div class="card">
+      <span class="tag">STEP 1</span>
+      <h3>공부하고 퀴즈 풀기</h3>
+      <div class="co">경제 카드를 읽고 퀴즈를 맞히면 포인트가 쌓여요. 하루 최대 130P.</div>
+    </div>
+    <div class="card">
+      <span class="tag">STEP 2</span>
+      <h3>포인트머니 통장 전환</h3>
+      <div class="co">모은 포인트를 실제 돈(1P=10원)으로 바꾸면, 잔액 구간에 따라 우대금리가 붙어요.</div>
+    </div>
+    <div class="card">
+      <span class="tag">STEP 3</span>
+      <h3>입출금 계좌로 옮겨 투자</h3>
+      <div class="co">필요하면 입출금 통장으로 옮겨 핀픽 펀드에 1만원부터 소액투자할 수 있어요.</div>
+    </div>
+  </div>
+</div></section>
+
+<!-- 이벤트 / 공지사항 게시판 -->
+<section class="section" style="padding-top:0"><div class="container">
+  <div class="board-grid">
+    <div class="panel">
+      <div class="sec-head" style="margin-bottom:12px">
+        <h3 style="margin:0">지금 진행 중인 이벤트</h3>
+        <a href="{{ url_for('board', bcat='이벤트') }}" class="more-link">더보기 →</a>
+      </div>
+      {% for e in events %}
+      <a href="{{ e.link or '#' }}" class="info-row"><span>{{ e.title }}</span><b>{{ e.date }}</b></a>
+      {% endfor %}
+    </div>
+
+    <div class="panel">
+      <div class="sec-head" style="margin-bottom:12px">
+        <h3 style="margin:0">공지사항</h3>
+        <a href="{{ url_for('board', bcat='공지사항') }}" class="more-link">더보기 →</a>
+      </div>
+      {% for n in notices %}
+      <a href="{{ n.link or '#' }}" class="info-row"><span>{{ n.title }}</span><b>{{ n.date }}</b></a>
+      {% endfor %}
+    </div>
+  </div>
+</div></section>
+
+<!-- 베스트 상품 랭킹 -->
+<section class="section"><div class="container">
+  <div class="sec-head">
+    <div>
+      <h2>지금 가장 높은 금리 TOP {{ ranking|length }}</h2>
+      <p class="sub">금융감독원 공시 데이터 기준 · 실시간</p>
+    </div>
+    <a href="{{ url_for('products') }}" class="more-link">상품 더보기 →</a>
+  </div>
+  <div class="panel">
+    {% for c in ranking %}
+    <div class="info-row">
+      <span><b class="rank">{{ c.rank }}</b> <b>{{ c.name }}</b> <span class="grp">{{ c.co }} · {{ c.type }}</span></span>
+      <b class="rate-cell {{ 'best' if c.rank == 1 }}">{{ '%.2f'|format(c.rate) }}%</b>
+    </div>
+    {% endfor %}
+  </div>
+</div></section>
+
+<!-- 자주 묻는 질문 -->
+<section class="section"><div class="container">
+  <div class="sec-head">
+    <div>
+      <h2>자주 묻는 질문</h2>
+      <p class="sub">FinPick 이용이 처음이라면 먼저 확인해보세요.</p>
+    </div>
+  </div>
+  <div class="panel">
+    {% for f in faq %}
+    <div class="info-row"><span>{{ f.q }}</span><b>{{ f.a }}</b></div>
+    {% endfor %}
+  </div>
+</div></section>
+
+{% endblock %}

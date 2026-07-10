@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}이벤트·공지사항 · {{ bank_name }}{% endblock %}
+{% block body %}
+<section class="section"><div class="container">
+  <h2>이벤트·공지사항</h2>
+  <p class="sub">FinPick의 새로운 소식을 확인하세요.</p>
+
+  <div class="tabs" style="margin-bottom:20px">
+    <a href="{{ url_for('board', bcat='전체') }}" class="tab {{ 'on' if bcat == '전체' }}">전체</a>
+    <a href="{{ url_for('board', bcat='이벤트') }}" class="tab {{ 'on' if bcat == '이벤트' }}">이벤트</a>
+    <a href="{{ url_for('board', bcat='공지사항') }}" class="tab {{ 'on' if bcat == '공지사항' }}">공지사항</a>
+  </div>
+
+  <div class="panel">
+    {% for p in posts %}
+    <a href="{{ p.link or '#' }}" class="info-row">
+      <span><b class="board-tag {{ 'ev' if p.cat == '이벤트' else 'no' }}">{{ p.cat }}</b> {{ p.title }}</span>
+      <b>{{ p.date }}</b>
+    </a>
+    {% else %}
+    <p class="sub" style="margin:0">게시물이 없습니다.</p>
+    {% endfor %}
+  </div>
+</div></section>
+{% endblock %}

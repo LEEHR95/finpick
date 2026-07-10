@@ -1,0 +1,201 @@
+<mxfile host="app.diagrams.net" modified="2026-07-02T00:00:00.000Z" agent="Codex" version="24.7.17">
+  <diagram id="system-architecture" name="시스템 구성도">
+    <mxGraphModel dx="1860" dy="1034" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1300" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="sourcesBox" value="입력 / 운영 / 적재 소스" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;fontStyle=1;align=left;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="80" y="60" width="1800" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="servicesBox" value="실시간 서비스 계층" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;fontStyle=1;align=left;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="80" y="340" width="1800" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="sinksBox" value="저장소 / 메시지 / 외부 연동" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#cbd5e1;fontStyle=1;align=left;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="80" y="640" width="1800" height="320" as="geometry" />
+        </mxCell>
+        <mxCell id="kafkaTopicBox" value="카프카 토픽" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff7ed;strokeColor=#fdba74;fontStyle=1;align=left;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="1270" y="670" width="320" height="270" as="geometry" />
+        </mxCell>
+
+        <mxCell id="user" value="사용자 브라우저&lt;br/&gt;웹 화면 + FAB 상담" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#3b82f6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="120" y="140" width="180" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="admin" value="관리자 / 운영자" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#3b82f6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="340" y="145" width="150" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="agents" value="bank_agents.py&lt;br/&gt;에이전트 워크플로" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#efe1ff;strokeColor=#8b5cf6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="560" y="140" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="fss" value="fetch_fss.py&lt;br/&gt;금융상품 수집" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7c3aed;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="840" y="145" width="190" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="bok" value="fetch_bok.py&lt;br/&gt;경제지표 수집" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7c3aed;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="145" width="190" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="uploader" value="app.py&lt;br/&gt;RAG 업로드 서비스 :5001" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7c3aed;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="140" width="230" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="kbseed" value="seed_consult_kb.py&lt;br/&gt;상담 KB 시드" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ede9fe;strokeColor=#7c3aed;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1600" y="140" width="220" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="web" value="bank_web.py&lt;br/&gt;Flask + Socket.IO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#3b82f6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="250" y="420" width="230" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="rag" value="rag_core.py&lt;br/&gt;검색 + 프롬프트 구성" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#3b82f6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="640" y="420" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="consult" value="bank_consult_bot.py&lt;br/&gt;상담 챗봇" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#3b82f6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="990" y="420" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="kafka" value="Kafka 브로커&lt;br/&gt;localhost:9092" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffedd5;strokeColor=#f97316;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="420" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="worker" value="이체 요청 컨슈머&lt;br/&gt;bank_web.py 내부" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#3b82f6;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1630" y="420" width="220" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="db" value="bank_db.py&lt;br/&gt;SQLite" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcfce7;strokeColor=#16a34a;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="120" y="760" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="cache" value="cache.py&lt;br/&gt;TTL 캐시" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcfce7;strokeColor=#16a34a;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="340" y="760" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="mon" value="monitoring.py&lt;br/&gt;로컬 모니터링" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcfce7;strokeColor=#16a34a;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="560" y="760" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="es" value="Elasticsearch&lt;br/&gt;상품 + 이체 로그" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcfce7;strokeColor=#16a34a;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="820" y="755" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="store" value="store.pkl&lt;br/&gt;임베딩 지식 저장소" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dcfce7;strokeColor=#16a34a;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="760" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="upstage" value="Upstage API&lt;br/&gt;채팅 / 임베딩 / OCR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe4e6;strokeColor=#ef4444;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="755" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="t1" value="bank-consult&lt;br/&gt;상담 메시지 토픽" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffedd5;strokeColor=#f97316;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1325" y="715" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="t2" value="bank-transfer-requests&lt;br/&gt;비동기 이체 요청 토픽" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffedd5;strokeColor=#f97316;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1325" y="800" width="210" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="t3" value="bank-transfers&lt;br/&gt;이체 이벤트 토픽" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffedd5;strokeColor=#f97316;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1325" y="885" width="210" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e0" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#3b82f6;strokeWidth=2;exitX=0.7;exitY=1;entryX=0.2;entryY=0;" edge="1" parent="1" source="user" target="web">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#3b82f6;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="admin" target="web">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#8b5cf6;strokeWidth=3;exitX=0.2;exitY=1;entryX=0.9;entryY=0;" edge="1" parent="1" source="agents" target="web">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#8b5cf6;strokeWidth=3;exitX=0.5;exitY=1;entryX=0.4;entryY=0;" edge="1" parent="1" source="agents" target="rag">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#8b5cf6;strokeWidth=3;exitX=0.8;exitY=1;entryX=0.2;entryY=0;" edge="1" parent="1" source="agents" target="es">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="760" y="300" />
+              <mxPoint x="760" y="720" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#16a34a;strokeWidth=2.5;exitX=0.5;exitY=1;entryX=0.25;entryY=0;" edge="1" parent="1" source="fss" target="es">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#16a34a;strokeWidth=2.5;exitX=0.5;exitY=1;entryX=0.75;entryY=0;" edge="1" parent="1" source="bok" target="es">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#3b82f6;strokeWidth=2.5;exitX=0.5;exitY=1;entryX=0.85;entryY=0;" edge="1" parent="1" source="uploader" target="rag">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#16a34a;strokeWidth=2.5;exitX=0.5;exitY=1;entryX=0.85;entryY=0;" edge="1" parent="1" source="kbseed" target="store">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#16a34a;strokeWidth=2.5;exitX=0.1;exitY=1;entryX=0.8;entryY=0;" edge="1" parent="1" source="web" target="db">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="280" y="620" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#16a34a;strokeWidth=2.5;exitX=0.28;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="web" target="cache">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#3b82f6;strokeWidth=2.5;exitX=0.45;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="web" target="mon">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#16a34a;strokeWidth=2.5;exitX=0.62;exitY=1;entryX=0.25;entryY=0;" edge="1" parent="1" source="web" target="es">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#3b82f6;strokeWidth=2.5;exitX=0.75;exitY=1;entryX=0.15;entryY=0;" edge="1" parent="1" source="web" target="rag">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#3b82f6;strokeWidth=2.5;exitX=0.88;exitY=1;entryX=0.15;entryY=0;" edge="1" parent="1" source="web" target="consult">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#f97316;strokeWidth=2.5;exitX=1;exitY=0.7;entryX=0.15;entryY=0;" edge="1" parent="1" source="web" target="kafka">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#3b82f6;strokeWidth=2.5;exitX=0;exitY=0.7;entryX=1;entryY=0.3;" edge="1" parent="1" source="consult" target="rag">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#f97316;strokeWidth=2.5;exitX=0.85;exitY=1;entryX=0.15;entryY=0;" edge="1" parent="1" source="kafka" target="worker">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#16a34a;strokeWidth=2.5;exitX=0.15;exitY=1;entryX=0.85;entryY=0;" edge="1" parent="1" source="worker" target="db">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1660" y="620" />
+              <mxPoint x="1660" y="910" />
+              <mxPoint x="260" y="910" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#16a34a;strokeWidth=2.5;exitX=0.2;exitY=1;entryX=0.85;entryY=0;" edge="1" parent="1" source="worker" target="es">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1670" y="620" />
+              <mxPoint x="1670" y="880" />
+              <mxPoint x="980" y="880" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#16a34a;strokeWidth=2.5;exitX=0.4;exitY=1;entryX=0.15;entryY=0;" edge="1" parent="1" source="rag" target="store">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#ef4444;strokeWidth=2.5;exitX=0.7;exitY=1;entryX=0.2;entryY=0;" edge="1" parent="1" source="rag" target="upstage">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#f97316;strokeWidth=2.5;exitX=0.75;exitY=1;entryX=0.15;entryY=0;" edge="1" parent="1" source="kafka" target="t1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1480" y="620" />
+              <mxPoint x="1480" y="700" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#f97316;strokeWidth=2.5;exitX=0.9;exitY=1;entryX=0.15;entryY=0;" edge="1" parent="1" source="kafka" target="t2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1500" y="620" />
+              <mxPoint x="1500" y="785" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;strokeColor=#f97316;strokeWidth=2.5;exitX=1;exitY=1;entryX=0.15;entryY=0;" edge="1" parent="1" source="kafka" target="t3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1520" y="620" />
+              <mxPoint x="1520" y="870" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

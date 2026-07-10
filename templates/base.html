@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ bank_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='logo.svg') }}">
+</head>
+<body>
+  <!-- 헤더 / 네비 -->
+  <header class="header"><div class="container">
+    <a href="{{ url_for('index') }}" class="logo" aria-label="FinPick 홈">
+      <img class="logo-img" src="{{ url_for('static', filename='img/logo-finpick.png') }}" alt="FinPick">
+    </a>
+    {% set cat = request.args.get('cat') %}
+    <nav class="nav">
+      <div class="nav-item"><a class="nav-top {{ 'on' if active=='home' }}" href="{{ url_for('index') }}">홈</a></div>
+      <div class="nav-item">
+        <a class="nav-top {{ 'on' if active in ['accounts','transfer'] }}" href="{{ url_for('accounts') }}">조회·이체</a>
+        <div class="nav-menu">
+          <a href="{{ url_for('accounts') }}">계좌조회</a>
+          <a href="{{ url_for('transfer') }}">이체</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a class="nav-top {{ 'on' if active=='products' and cat in ['예금','적금'] }}" href="{{ url_for('products', cat='예금') }}">예적금</a>
+        <div class="nav-menu">
+          <a href="{{ url_for('products', cat='예금') }}">예금</a>
+          <a href="{{ url_for('products', cat='적금') }}">적금</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a class="nav-top {{ 'on' if (active=='products' and cat in ['펀드','외환','골드']) or active in ['invest','rates'] }}" href="{{ url_for('products', cat='펀드') }}">투자</a>
+        <div class="nav-menu">
+          <a href="{{ url_for('products', cat='펀드') }}">펀드</a>
+          <a href="{{ url_for('products', cat='외환') }}">외환</a>
+          <a href="{{ url_for('products', cat='골드') }}">골드</a>
+          <a href="{{ url_for('invest') }}">모의 주식</a>
+          <a href="{{ url_for('rates_dashboard') }}">금리 대시보드</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a class="nav-top {{ 'on' if active=='products' and cat in ['대출','연금'] }}" href="{{ url_for('products', cat='대출') }}">대출·연금</a>
+        <div class="nav-menu">
+          <a href="{{ url_for('products', cat='대출') }}">대출</a>
+          <a href="{{ url_for('products', cat='연금') }}">연금</a>
+        </div>
+      </div>
+      <div class="nav-item"><a class="nav-top {{ 'on' if active=='learn' }}" href="{{ url_for('learn') }}">픽앤업</a></div>
+    </nav>
+    <div class="spacer"></div>
+    <div class="header-auth">
+    {% if current_user %}
+      {% if current_user.role == 'admin' %}
+      <a href="{{ url_for('admin_dashboard') }}" class="btn btn-ghost">관리자</a>
+      {% else %}
+      <a href="{{ url_for('mypage') }}" class="user-greet">{{ current_user.name }}님</a>
+      {% endif %}
+      <a href="{{ url_for('logout') }}" class="btn btn-ghost">로그아웃</a>
+    {% else %}
+      <a href="{{ url_for('login') }}" class="btn btn-ghost">로그인</a>
+      <a href="{{ url_for('register') }}" class="btn btn-primary">회원가입</a>
+    {% endif %}
+    </div>
+  </div></header>
+
+  <!-- 플래시 메시지 -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="flash">
+      {% for cat, msg in messages %}<div class="msg {{ cat }}">{{ msg }}</div>{% endfor %}
+    </div>{% endif %}
+  {% endwith %}
+
+  {% block body %}{% endblock %}
+
+  <!-- 푸터 -->
+  <footer class="footer"><div class="container">
+    <div class="foot-links">
+      <a href="{{ url_for('terms') }}">이용약관</a> ·
+      <a href="{{ url_for('privacy') }}"><b>개인정보처리방침</b></a> ·
+      <a href="#">고객센터</a>
+    </div>
+    <div><b>FinPick</b> · 핀픽주식회사 · 대표 홍길동<br>
+      서울특별시 중구 세종대로 00 · 사업자등록번호 000-00-00000</div>
+    <div>고객센터 1599-0000<br>학습·데모용 서비스 (실제 금융거래 아님)</div>
+  </div></footer>
+
+  <!-- 실시간 상담 챗봇 위젯 (카푸카 + Socket.IO) -->
+  <button class="chat-fab" onclick="toggleChat()" aria-label="상담 챗봇 열기">
+    <img src="{{ url_for('static', filename='img/ic-chat.png') }}" alt="챗봇">
+  </button>
+  <div class="chat-box" id="chatBox">
+    <div class="chat-head">
+      <span id="chatTitle">{{ 'AI 은행원' if current_user else '실시간 상담' }}</span>
+      {% if current_user %}
+      <div class="chat-mode">
+        <button type="button" id="modeAgent" class="chat-mode-btn on" onclick="setAgentMode(true)">AI 은행원</button>
+        <button type="button" id="modeConsult" class="chat-mode-btn" onclick="setAgentMode(false)">상담</button>
+      </div>
+      {% else %}
+      <small>상담봇이 예적금·대출·금리를 도와드려요</small>
+      {% endif %}
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div class="chat-msg bot"><div class="bubble">{{ '안녕하세요! 잔액 조회·이체·상품 상담을 도와드려요. 예) "내 잔액 알려줘", "홍길동에게 5만원 보내줘"' if current_user else '안녕하세요! 예금·적금·대출 상품이나 금리에 대해 물어보세요. 예) "안전하게 목돈 굴리기 좋은 예금"' }}</div></div>
+    </div>
+    <div class="chat-input">
+      <input id="chatInput" placeholder="메시지를 입력하세요" autocomplete="off" onkeydown="if(event.key==='Enter')sendChat()">
+      <button onclick="sendChat()">전송</button>
+    </div>
+  </div>
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <script>
+    // 상담방 채널: 로그인하면 회원 전용 방, 손님은 브라우저에 저장된 방으로 대화가 이어짐
+    {% if current_user %}
+    const CONSULT_ME = {{ current_user.name | tojson }};
+    const CONSULT_CH = "u-{{ current_user.id }}";
+    {% else %}
+    const CONSULT_ME = "손님";
+    let CONSULT_CH = localStorage.getItem('finpick_consult_ch');
+    if(!CONSULT_CH){ CONSULT_CH = 'g-' + Math.random().toString(36).slice(2,10);
+                     localStorage.setItem('finpick_consult_ch', CONSULT_CH); }
+    {% endif %}
+
+    function toggleChat(){ document.getElementById('chatBox').classList.toggle('open'); }
+
+    // AI 은행원(에이전트) 모드: 로그인 사용자 기본. /api/agent(REST)로 실제 업무 처리.
+    // 상담 모드: 기존 소켓 상담봇. 손님은 항상 상담 모드.
+    let AGENT_MODE = {{ 'true' if current_user else 'false' }};
+    function setAgentMode(on){
+      AGENT_MODE = on;
+      const a=document.getElementById('modeAgent'), c=document.getElementById('modeConsult');
+      if(a&&c){ a.classList.toggle('on', on); c.classList.toggle('on', !on); }
+      document.getElementById('chatTitle').textContent = on ? 'AI 은행원' : '실시간 상담';
+      document.getElementById('chatBody').innerHTML = '';
+      addMsg(on ? '무엇을 도와드릴까요? 잔액 조회·이체·상품 상담을 할 수 있어요.'
+                : '예적금·대출·금리 등 궁금한 점을 물어보세요.', 'bot', false);
+    }
+
+    async function sendAgent(q){
+      addMsg(q, 'user', false);
+      const bubble = addMsg('…', 'bot', false);
+      try{
+        const r = await fetch("{{ url_for('api_agent') }}", {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({message:q})
+        });
+        const data = await r.json();
+        const answer = data.answer || data.error || '응답을 받지 못했어요.';
+        bubble.textContent = '';
+        typeWriter(bubble, answer, document.getElementById('chatBody'));
+      }catch(e){ bubble.textContent = '에이전트 연결 오류가 발생했어요.'; }
+    }
+
+    // 봇 답변을 챗지피티처럼 한 글자씩(정확히는 몇 글자씩) 타이핑되듯 보여준다.
+    // 메시지가 길어도 전체 애니메이션이 너무 오래 걸리지 않게, 길이에 맞춰 한 번에 넘길
+    // 글자 수를 조절한다(대략 60틱 안에 끝나도록).
+    function typeWriter(bubble, text, container){
+      const ticks = 80;
+      const chunk = Math.max(1, Math.ceil(text.length / ticks));
+      let i = 0;
+      const timer = setInterval(()=>{
+        i += chunk;
+        bubble.textContent = text.slice(0, i);
+        container.scrollTop = container.scrollHeight;
+        if(i >= text.length){
+          bubble.textContent = text;
+          clearInterval(timer);
+        }
+      }, 32);
+    }
+
+    function addMsg(text, who, animate){
+      const b=document.getElementById('chatBody');
+      const d=document.createElement('div'); d.className='chat-msg '+who;
+      d.innerHTML='<div class="bubble"></div>';
+      const bubble = d.querySelector('.bubble');
+      b.appendChild(d);
+      if(animate && who==='bot'){
+        typeWriter(bubble, text, b);
+      } else {
+        bubble.textContent = text;
+      }
+      b.scrollTop=b.scrollHeight;
+      return bubble;
+    }
+
+    const chatSocket = io();
+    let _chatJoined = false;
+    chatSocket.on('connect', ()=>{
+      chatSocket.emit('join', { channel: CONSULT_CH, user: CONSULT_ME });
+      _chatJoined = true;
+    });
+    // 입장 시 지난 대화 복원(카푸카 보관분). 첫 안내 문구는 지우고 히스토리로 채움.
+    // 지난 대화는 타이핑 애니메이션 없이 바로 표시한다(새로 온 답변만 타이핑 효과).
+    chatSocket.on('history', (arr)=>{
+      if(AGENT_MODE) return;                 // 에이전트 모드에선 소켓 히스토리 무시
+      if(!arr || !arr.length) return;
+      document.getElementById('chatBody').innerHTML='';
+      arr.forEach(m=> addMsg(m.text, (m.bot || m.user!==CONSULT_ME) ? 'bot' : 'user', false));
+    });
+    chatSocket.on('message', (m)=>{
+      if(AGENT_MODE) return;
+      if(m.channel!==CONSULT_CH) return;
+      const isBot = m.bot || m.user!==CONSULT_ME;
+      addMsg(m.text, isBot ? 'bot' : 'user', isBot);
+    });
+    chatSocket.on('error_message', (t)=>{ if(!AGENT_MODE) addMsg(t, 'bot', true); });
+
+    function sendChat(){
+      const inp=document.getElementById('chatInput'); const q=inp.value.trim(); if(!q)return;
+      inp.value='';
+      if(AGENT_MODE){ sendAgent(q); return; }
+      chatSocket.emit('send', { channel: CONSULT_CH, user: CONSULT_ME, text: q });
+    }
+    // 홈 배너 등에서 예시 질문을 클릭하면 채팅창을 열고 바로 전송
+    function askChat(q){
+      document.getElementById('chatBox').classList.add('open');
+      if(AGENT_MODE){ sendAgent(q); return; }
+      chatSocket.emit('send', { channel: CONSULT_CH, user: CONSULT_ME, text: q });
+    }
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

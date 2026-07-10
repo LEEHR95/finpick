@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}머니 전환 · {{ bank_name }}{% endblock %}
+{% block body %}
+<section class="section"><div class="container">
+  <div class="sec-head">
+    <div>
+      <h2>픽앤업 머니 전환</h2>
+      <p class="sub">모은 포인트를 현금으로 바꿔 입출금 통장에 넣어요. 이 통장은 잔액에 따라 우대금리가 붙어요.</p>
+    </div>
+    <a href="{{ url_for('learn') }}" class="more-link">← 픽앤업으로</a>
+  </div>
+
+  <div class="point-acct-box">
+    <div class="point-acct-head">
+      <div>
+        <h2>보유 포인트</h2>
+        <p class="sub">1P = {{ point_to_won }}원으로 전환돼요.</p>
+      </div>
+      <div class="point-acct-rate">
+        <div class="hb-label">보유 포인트</div>
+        <div class="rate-v hl" style="font-size:28px">{{ '{:,}'.format(points) }}<small style="font-size:16px"> P</small></div>
+      </div>
+    </div>
+
+    {% if not pickup_account %}
+      <div class="pa-divider"></div>
+      <p class="sub" style="margin:0 0 14px">아직 전환받을 통장이 없어요. <b>픽앤업 전환 통장(입출금)</b>을 개설하면 포인트를 현금으로 넣을 수 있어요.</p>
+      <form method="post" action="{{ url_for('pickup_account_open') }}">
+        <button class="btn btn-primary btn-lg" type="submit">픽앤업 전환 통장 개설</button>
+      </form>
+    {% else %}
+      <div class="point-acct-bal">
+        <span>픽앤업 통장 (입출금) · {{ pickup_account.account_no }}</span>
+        <div><b id="acctBalVal">{{ '{:,}'.format(point_balance) }}</b><small>원</small></div>
+      </div>
+      <p class="sub" style="margin:6px 0 0">현재 우대금리 <b class="rate-cell">{{ '%.2f'|format(point_rate) }}%</b>{% if next_tier %} · {{ '{:,}'.format(next_tier.need) }}원 더 모으면 {{ '%.2f'|format(next_tier.rate) }}%로 올라가요.{% else %} · 최고 우대금리 구간이에요.{% endif %}</p>
+
+      <div class="pa-divider"></div>
+
+      <form method="post" action="{{ url_for('pickup_convert') }}" class="pa-form">
+        <label>포인트 전환 <span class="pa-hint">보유 {{ '{:,}'.format(points) }}P → 통장에 현금 입금</span></label>
+        <div class="pa-row">
+          <input type="number" name="points" min="1" step="1" placeholder="전환할 포인트" required>
+          <button class="btn btn-primary" type="submit">전환하기</button>
+        </div>
+      </form>
+
+      <a href="{{ url_for('transfer') }}" class="btn btn-ghost btn-block" style="margin-top:16px">이 통장에서 이체하기 (투자·송금에 사용)</a>
+    {% endif %}
+  </div>
+
+  <div class="promo-banner">
+    <div class="pb-copy">
+      <b>핀픽 펀드로 소액투자</b>
+      <span>전환한 현금을 입출금 통장에서 이체해 소액으로 시작해보세요.</span>
+    </div>
+    <a href="{{ url_for('products', cat='펀드') }}" class="btn btn-primary">펀드 보러가기</a>
+  </div>
+</div></section>
+{% endblock %}

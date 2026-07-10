@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} · {{ bank_name }}{% endblock %}
+{% block body %}
+{% set is_loan = product.kind == '대출' %}
+<section class="section"><div class="container">
+  <h2>{{ '대출 신청' if is_loan else '상품 가입' }}</h2>
+  <p class="sub">FinPick 자체 상품 · {{ '실행 시 계좌로 입금됩니다' if is_loan else '가입 시 출금 계좌에서 예치됩니다' }}.</p>
+
+  <div class="grid-2">
+    <div class="panel">
+      <span class="tag">{{ product.type }}</span>
+      <h3 style="margin:10px 0 4px">{{ product.name }}</h3>
+      <p class="co" style="margin:0 0 8px">{{ product.desc }}</p>
+      <div class="big" style="color:var(--primary);font-size:30px;font-weight:800">
+        {% if product.rate_text %}<span style="font-size:22px">{{ product.rate_text }}</span>{% else %}{{ '%.2f'|format(product.rate) }}<small style="font-size:14px;color:var(--muted)"> % · {{ product.sub }}</small>{% endif %}
+      </div>
+
+      <form method="post" style="margin-top:18px">
+        <div class="field">
+          <label>{{ '대출 금액' if is_loan else '가입 금액' }} (원){% if product.min %} · 최소 {{ '{:,}'.format(product.min) }}원{% endif %}</label>
+          <input name="amount" inputmode="numeric" placeholder="{{ product.min or 100000 }}" required autofocus>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" type="submit">{{ '대출받기' if is_loan else '가입하기' }}</button>
+      </form>
+      <a href="{{ url_for('products') }}" class="btn btn-ghost btn-block" style="margin-top:8px">← 상품 목록</a>
+    </div>
+
+    <div>
+      {% for a in accounts %}
+      <div class="acct-card">
+        <div class="label">{{ '입금 계좌' if is_loan else '출금 계좌' }}</div>
+        <div class="no">{{ a.account_no }}</div>
+        <div class="bal">{{ '{:,}'.format(a.balance) }}<small> 원</small></div>
+      </div>
+      {% endfor %}
+      <div class="panel">
+        <h3>안내</h3>
+        <p class="sub" style="margin:0">
+          {% if is_loan %}
+            대출을 실행하면 대출금이 계좌로 <b>입금</b>돼요. (데모 · 상환·심사 과정은 생략)
+          {% else %}
+            가입하면 가입금액이 출금 계좌에서 빠져나가 상품에 예치돼요.
+            {% if product.term %}만기 시 원금+이자를 받는 구조입니다(데모).{% else %}수시로 입출금 가능한 파킹 상품입니다(데모).{% endif %}
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+</div></section>
+{% endblock %}

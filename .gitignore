@@ -1,0 +1,29 @@
+.DS_Store
+node_modules/
+*.log
+.env*
+*.pem
+*.key
+credentials*.json
+service-account*.json
+.omc/
+__pycache__/
+*.pyc
+store.pkl
+data/
+.vendor/
+
+# 디자인 소스 원본 — 실제 사용본은 static/img/ 로 복사하므로 원본/psd는 제외
+/핀픽*.png
+/핀픽*.psd
+/핀픽아이콘/
+
+# 내부 작업노트(세션 메모·핸드오프·리포트) — 공개 레포에서 제외
+HANDOFF.md
+MEMORY.md
+ISSUE.md
+WIKI.md
+REPORT_*.md
+bank_data_report.html
+bank_data_report.ipynb
+.pytest_cache/

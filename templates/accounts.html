@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}계좌조회 · {{ bank_name }}{% endblock %}
+{% block body %}
+<section class="section"><div class="container">
+  <h2>전체계좌조회</h2>
+  <p class="sub">{{ current_user.name }}님의 계좌 현황</p>
+
+  <div class="tabs" style="margin-bottom:20px">
+    <a href="{{ url_for('accounts', atab='입출금') }}" class="tab {{ 'on' if atab == '입출금' }}">입출금</a>
+    <a href="{{ url_for('accounts', atab='예적금') }}" class="tab {{ 'on' if atab == '예적금' }}">예적금</a>
+    <a href="{{ url_for('accounts', atab='대출') }}" class="tab {{ 'on' if atab == '대출' }}">대출</a>
+  </div>
+
+  {% if atab == '입출금' %}
+  <div class="grid-2 acct-grid">
+    <div>
+      {% for a in accounts %}
+      <div class="acct-card acct-card-sm" style="margin-bottom:16px">
+        <div class="label">{{ '픽앤업 통장 (입출금·우대금리)' if a.acct_type == 'point' else 'FinPick 입출금통장' }}</div>
+        <div class="no">{{ a.account_no }}</div>
+        <div class="bal">{{ '{:,}'.format(a.balance) }}<small> 원</small></div>
+      </div>
+      {% endfor %}
+      <a href="{{ url_for('transfer') }}" class="btn btn-primary btn-lg btn-block" style="margin-top:6px">이체하기</a>
+    </div>
+
+    <div class="panel">
+      <h3>최근 거래내역</h3>
+      {% if txns %}
+      <table class="txn-table">
+        <tr><th>일시</th><th>구분</th><th>상대</th><th style="text-align:right">금액</th><th style="text-align:right">잔액</th></tr>
+        {% for t in txns %}
+        <tr>
+          <td class="co">{{ t.created_at[5:16] }}</td>
+          <td>{{ t.kind }}</td>
+          <td>{{ t.counterpart }}</td>
+          <td style="text-align:right" class="{{ 'amt-in' if t.kind=='입금' else 'amt-out' }}">
+            {{ '+' if t.kind=='입금' else '-' }}{{ '{:,}'.format(t.amount) }}</td>
+          <td style="text-align:right">{{ '{:,}'.format(t.balance_after) }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% else %}
+      <p class="sub">아직 거래내역이 없습니다.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% elif atab == '예적금' %}
+  <div class="panel">
+    <div class="sec-head" style="margin-bottom:14px">
+      <h3 style="margin:0">가입한 예적금 {{ deposits|length }}건</h3>
+      <a href="{{ url_for('products') }}" class="more-link">상품 둘러보기 →</a>
+    </div>
+    {% if deposits %}
+    <table class="cmp">
+      <thead><tr><th>상품</th><th>금리</th><th style="text-align:right">원금</th>
+        <th style="text-align:right">만기금액</th><th>가입일</th></tr></thead>
+      <tbody>
+      {% for s in deposits %}
+      <tr>
+        <td><b>{{ s.product_name }}</b>
+          <span class="grp">{{ s.ptype }}{% if s.term_months >= 36 %}·{{ (s.term_months/12)|int }}년{% elif s.term_months %}·{{ s.term_months }}개월{% endif %}</span></td>
+        <td><b class="rate-cell">{{ '%.2f'|format(s.rate) }}%</b></td>
+        <td style="text-align:right">{{ '{:,}'.format(s.principal) }}원</td>
+        <td style="text-align:right" class="amt-in">{{ '{:,}'.format(s.maturity_amount) }}원</td>
+        <td class="co">{{ s.created_at[:10] }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="sub" style="margin:0">아직 가입한 예적금이 없어요. <a href="{{ url_for('products') }}" class="more-link">핀픽 상품 보러가기 →</a></p>
+    {% endif %}
+  </div>
+
+  {% else %}
+  <div class="panel">
+    <div class="sec-head" style="margin-bottom:14px">
+      <h3 style="margin:0">이용 중인 대출 {{ loans|length }}건</h3>
+      <a href="{{ url_for('products') }}" class="more-link">상품 둘러보기 →</a>
+    </div>
+    {% if loans %}
+    <table class="cmp">
+      <thead><tr><th>상품</th><th>금리</th><th style="text-align:right">대출금</th>
+        <th style="text-align:right">상환금액</th><th>가입일</th></tr></thead>
+      <tbody>
+      {% for s in loans %}
+      <tr>
+        <td><b>{{ s.product_name }}</b>
+          <span class="grp">{{ s.ptype }}{% if s.term_months >= 36 %}·{{ (s.term_months/12)|int }}년{% elif s.term_months %}·{{ s.term_months }}개월{% endif %}</span></td>
+        <td><b class="rate-cell">{{ '%.2f'|format(s.rate) }}%</b></td>
+        <td style="text-align:right">{{ '{:,}'.format(s.principal) }}원</td>
+        <td style="text-align:right" class="amt-out">{{ '{:,}'.format(s.maturity_amount) }}원</td>
+        <td class="co">{{ s.created_at[:10] }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="sub" style="margin:0">이용 중인 대출이 없어요. <a href="{{ url_for('products') }}" class="more-link">핀픽 상품 보러가기 →</a></p>
+    {% endif %}
+  </div>
+  {% endif %}
+</div></section>
+{% endblock %}

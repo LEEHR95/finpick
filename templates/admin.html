@@ -1,0 +1,896 @@
+{% extends "admin_base.html" %}
+{% block title %}관리자 콘솔 · {{ bank_name }}{% endblock %}
+
+{# 실측 시계열(build_chart 결과)을 라인+영역 차트로. 점 2개 미만이면 '수집 중' 안내 #}
+{% macro line_chart(c, color='var(--primary)') %}
+  {% if c and not c.collecting %}
+  <svg class="trend-chart" viewBox="0 0 285 100" preserveAspectRatio="none">
+    <polygon points="{{ c.area }}" fill="var(--accent-soft)"></polygon>
+    <polyline points="{{ c.points }}" fill="none" stroke="{{ color }}" stroke-width="2" vector-effect="non-scaling-stroke"></polyline>
+  </svg>
+  <div class="trend-labels"><span>{{ c.t_first }}</span><span>최대 {{ c.vmax }}{{ c.unit }} · 현재 {{ c.last }}{{ c.unit }}</span><span>{{ c.t_last }}</span></div>
+  {% else %}
+  <p class="sub chart-collecting">📈 실측 데이터 수집 중… 30초마다 실제 값이 쌓여요{% if c and c.points_count %} (현재 {{ c.points_count }}개, 2개부터 그래프 표시){% endif %}.</p>
+  {% endif %}
+{% endmacro %}
+
+{% macro spark(c, color='var(--primary)') %}
+  {% if c and not c.collecting %}
+  <svg class="spark" viewBox="0 0 285 100" preserveAspectRatio="none">
+    <polyline points="{{ c.points }}" fill="none" stroke="{{ color }}" stroke-width="3" vector-effect="non-scaling-stroke"></polyline>
+  </svg>
+  {% else %}<span class="spark-collecting">수집 중</span>{% endif %}
+{% endmacro %}
+
+{% block body %}
+<section class="admin-main"><div class="container">
+  <div class="admin-head-row">
+    <div>
+      <h2 style="margin:0">관리자 페이지</h2>
+      <p class="sub" style="margin:6px 0 0">인프라, 은행 웹 운영, 관리자 에이전트, 테스트 실행 기록을 한 화면에서 확인할 수 있게 정리했습니다.</p>
+    </div>
+  </div>
+
+  <div class="admin-shell">
+    <nav class="admin-sidebar">
+      <div class="admin-side-head">
+        <div class="admin-side-logo">
+          <img class="admin-side-logo-img" src="{{ url_for('static', filename='img/logo-finpick-en.png') }}" alt="FinPick">
+          <div>
+            <div class="admin-side-title">FinPick 관리자</div>
+            <div class="admin-side-sub">Bank Web + Agent Ops</div>
+          </div>
+        </div>
+        <div class="admin-side-user">{{ current_user.name if current_user else '관리자' }}</div>
+      </div>
+
+      <div class="admin-nav-group">대시보드</div>
+      <button class="admin-nav-item on" data-panel="overview"><span class="admin-nav-ic">●</span>종합현황</button>
+      <button class="admin-nav-item" data-panel="agents"><span class="admin-nav-ic">●</span>에이전트 모니터링</button>
+
+      <div class="admin-nav-group">인프라</div>
+      <button class="admin-nav-item" data-panel="kafka"><span class="admin-nav-ic">●</span>카프카</button>
+      <button class="admin-nav-item" data-panel="cache"><span class="admin-nav-ic">●</span>캐시(Redis)</button>
+      <button class="admin-nav-item" data-panel="search"><span class="admin-nav-ic">●</span>검색엔진(ES)</button>
+      <button class="admin-nav-item" data-panel="kibana"><span class="admin-nav-ic">●</span>키바나</button>
+      <button class="admin-nav-item" data-panel="db"><span class="admin-nav-ic">●</span>데이터베이스</button>
+
+      <div class="admin-nav-group">AI 운영</div>
+      <button class="admin-nav-item" data-panel="consult"><span class="admin-nav-ic">●</span>상담 운영</button>
+      <button class="admin-nav-item" data-panel="kb"><span class="admin-nav-ic">●</span>지식베이스</button>
+      <button class="admin-nav-item" data-panel="phoenix"><span class="admin-nav-ic">●</span>LLM 추적</button>
+      <button class="admin-nav-item" data-panel="prompts"><span class="admin-nav-ic">●</span>프롬프트 관리</button>
+
+      <div class="admin-nav-group">에이전트 실행</div>
+      <button class="admin-nav-item" data-panel="fraud"><span class="admin-nav-ic">●</span>이상거래탐지</button>
+      <button class="admin-nav-item" data-panel="credit"><span class="admin-nav-ic">●</span>여신심사</button>
+      <button class="admin-nav-item" data-panel="compliance"><span class="admin-nav-ic">●</span>컴플라이언스</button>
+
+      <div class="admin-side-box admin-side-box-dashed">
+        <div class="admin-side-box-label">기록 범위</div>
+        <div class="admin-side-box-title">{{ panels.agents.summary.window_label }}</div>
+        <div class="admin-side-box-sub">웹 실행과 테스트 스크립트 결과를 함께 추적합니다.</div>
+      </div>
+
+      <div class="admin-side-box">
+        <div class="admin-side-box-label">빠른 이동</div>
+        <a href="{{ url_for('index') }}" class="admin-side-action">메인 서비스로 이동</a>
+        <a href="{{ url_for('logout') }}" class="admin-side-action admin-side-action-muted">로그아웃</a>
+      </div>
+    </nav>
+
+    <div class="admin-content">
+      <!-- 종합현황 -->
+      <div class="admin-panel" id="panel-overview">
+        <div class="sec-head">
+          <h3 style="margin:0">종합현황
+            <span class="help-tip" tabindex="0">?
+              <span class="help-tip-bubble">모든 시스템의 핵심 지표를 한눈에 보는 화면이에요. 게이지·카드·상태표·컨테이너 리소스는 지금 이 순간의 실제 값, 추이 그래프와 이상 이벤트는 서버가 30초마다 쌓은 실측 시계열이에요. (서버를 켠 지 얼마 안 됐으면 '수집 중'으로 보이다가 점점 채워져요.)</span>
+            </span>
+          </h3>
+        </div>
+
+        <div class="ov-grid">
+          {% for g in panels.overview.gauges %}
+          <div class="ov-card">
+            <div class="gauge" style="background:conic-gradient({{ g.color }} {{ (g.pct * 3.6)|round(1) }}deg, var(--line) 0deg)">
+              <div class="gauge-val">{{ g.value_text }}</div>
+            </div>
+            <div class="ov-label">{{ g.label }}</div>
+          </div>
+          {% endfor %}
+          {% for c in panels.overview.stat_cards %}
+          <div class="ov-card">
+            <div class="ov-value">{{ c.value }}</div>
+            <div class="ov-label" style="margin-top:6px">{{ c.label }}</div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <h4 style="margin:4px 0 10px">시스템 상태 요약</h4>
+        <table class="status-table">
+          <tbody>
+          {% for r in panels.overview.status_rows %}
+          <tr>
+            <td><span class="status-dot {{ 'ok' if r.ok else 'bad' }}"></span>{{ r.name }}</td>
+            <td class="st-detail">{{ r.detail }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+
+        {% if panels.overview.kb_bars %}
+        <h4 style="margin:4px 0 6px">상담봇 지식베이스 카테고리별 문서 수</h4>
+        <div class="ov-bars">
+          {% for b in panels.overview.kb_bars %}
+          <div class="ov-bar">
+            <div class="ov-bar-fill" style="height:{{ b.pct }}%">
+              <span class="ov-bar-count">{{ b.count }}</span>
+            </div>
+            <div class="ov-bar-label">{{ b.label }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="ov-2col" style="margin-top:24px">
+          <div>
+            <h4 style="margin:0 0 6px">요청 응답시간 p95 추이 <span class="chart-real">실측</span></h4>
+            {% if panels.overview.p95_now is not none %}<p class="sub" style="margin:0 0 6px">현재 p95 {{ panels.overview.p95_now }}ms (정적파일·소켓 제외 앱 요청 기준)</p>{% endif %}
+            {{ line_chart(panels.overview.chart_p95, 'var(--money-out)') }}
+          </div>
+          <div>
+            <h4 style="margin:0 0 6px">캐시 히트율 추이 <span class="chart-real">실측</span></h4>
+            {{ line_chart(panels.overview.chart_hit, 'var(--money-in)') }}
+          </div>
+        </div>
+
+        {% if panels.overview.containers %}
+        <h4 style="margin:26px 0 6px">컨테이너 리소스 사용량 <span class="chart-real">실측 (docker stats)</span></h4>
+        {% for c in panels.overview.containers %}
+        <div class="res-row">
+          <div class="res-name">{{ c.name }}</div>
+          <div class="res-meter-wrap">
+            <div class="res-meter-top"><span>CPU</span><span>{{ c.cpu }}%</span></div>
+            <div class="res-meter"><div class="res-meter-fill" style="width:{{ c.cpu_w }}%;background:{{ c.cpu_color }}"></div></div>
+          </div>
+          <div class="res-meter-wrap">
+            <div class="res-meter-top"><span>MEM</span><span>{{ c.mem }}%</span></div>
+            <div class="res-meter"><div class="res-meter-fill" style="width:{{ c.mem_w }}%;background:{{ c.mem_color }}"></div></div>
+          </div>
+          <div class="res-spark" title="CPU 추이">{{ spark(c.cpu_chart, c.cpu_color) }}</div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <h4 style="margin:26px 0 10px">이상 이벤트 <span class="chart-real">실측 시계열 기준</span></h4>
+        {% if panels.overview.incidents %}
+        <table class="cmp">
+          <thead><tr><th>내용</th><th>등급</th><th>측정값</th><th>시각</th></tr></thead>
+          <tbody>
+          {% for i in panels.overview.incidents %}
+          <tr>
+            <td>{{ i.message }}</td>
+            <td><span class="lvl-badge {{ i.level }}">{{ '주의' if i.level == 'warning' else '정보' }}</span></td>
+            <td>{{ i.value }}</td>
+            <td class="grp">{{ i.when }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="sub" style="display:flex;align-items:center;gap:8px"><span class="status-dot ok"></span>최근 1시간 임계치를 넘긴 이상 징후가 없어요. (응답시간 p95 1.5초 초과·캐시 히트율 40% 미만 감시 중)</p>
+        {% endif %}
+      </div>
+
+      <!-- 카프카 -->
+      <div class="admin-panel" id="panel-kafka" style="display:none">
+        <div class="sec-head">
+          <h3 style="margin:0">카프카
+            <span class="help-tip" tabindex="0">?
+              <span class="help-tip-bubble">메시지를 순서대로 처리하는 시스템이에요. 이체·상담 같은 이벤트가 여기를 거쳐가요. '연결됨'이면 정상이에요.</span>
+            </span>
+          </h3>
+          {% if panels.kafka.error or not panels.kafka.connected %}
+            <span class="badge down">연결 안 됨</span>
+          {% else %}
+            <span class="badge up">연결됨</span>
+          {% endif %}
+        </div>
+        <div class="info-row"><span>브로커 주소</span><b>{{ panels.kafka.broker }}</b></div>
+
+        {% set km = panels.kafka.metrics %}
+        {% set kp = panels.kafka.panel %}
+        {% if kp %}
+        <div class="ov-grid" style="margin-top:18px">
+          <div class="ov-card">
+            <div class="ov-value">{{ '{:,}'.format(kp.summary.in_total_now or 0) }}</div>
+            <div class="ov-label">최근 30초 유입량</div>
+          </div>
+          <div class="ov-card">
+            <div class="ov-value">{{ kp.summary.lag if kp.summary.lag is not none else '–' }}</div>
+            <div class="ov-label">이체요청 큐 랙</div>
+          </div>
+          <div class="ov-card">
+            <div class="ov-value">{{ kp.summary.workers_alive }}/{{ kp.summary.workers_total }}</div>
+            <div class="ov-label">살아있는 워커</div>
+          </div>
+          <div class="ov-card">
+            <div class="ov-value">{{ '{:,}'.format(kp.summary.published_fail_total or 0) }}</div>
+            <div class="ov-label">누적 발행 실패</div>
+          </div>
+        </div>
+
+        <div class="ov-2col" style="margin-top:20px">
+          <div>
+            <h4 style="margin:0 0 6px">전체 토픽 유입량 추이 <span class="chart-real">실측</span></h4>
+            <p class="sub" style="margin:0 0 6px">30초마다 각 토픽의 새 메시지 증가분을 합산해 보여줘요.</p>
+            {{ line_chart(kp.chart_total_in, 'var(--primary)') }}
+          </div>
+          <div>
+            <h4 style="margin:0 0 6px">이체요청 큐 랙 추이 <span class="chart-real">실측</span></h4>
+            <p class="sub" style="margin:0 0 6px">0이면 비동기 이체 처리기가 큐를 따라잡고 있다는 뜻이에요.</p>
+            {{ line_chart(kp.chart_lag, 'var(--money-out)') }}
+          </div>
+        </div>
+
+        <div class="ov-2col" style="margin-top:20px">
+          <div>
+            <h4 style="margin:0 0 6px">상담 토픽 유입량 추이 <span class="chart-real">실측</span></h4>
+            {{ line_chart(kp.chart_consult, 'var(--primary)') }}
+          </div>
+          <div>
+            <h4 style="margin:0 0 6px">이체요청 토픽 유입량 추이 <span class="chart-real">실측</span></h4>
+            {{ line_chart(kp.chart_transfer_req, 'var(--money-out)') }}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if km and km.topics %}
+        <h4 style="margin:20px 0 8px">토픽별 상태 <span class="chart-real">실측 + 런타임 집계</span></h4>
+        <table class="cmp">
+          <thead><tr><th>토픽</th><th>용도</th><th style="text-align:right">누적 메시지</th><th style="text-align:right">최근 30초</th><th style="text-align:right">발행 성공</th><th style="text-align:right">발행 실패</th><th style="text-align:right">소비 처리</th><th>마지막 발행</th><th>마지막 소비</th></tr></thead>
+          <tbody>
+          {% for t in kp.topic_rows %}
+          <tr>
+            <td class="grp">{{ t.topic }}</td>
+            <td class="sub" style="font-size:13px">{{ t.purpose }}</td>
+            <td style="text-align:right"><b>{{ '{:,}'.format(t.messages or 0) }}</b>{% if t.partitions %}<div class="sub" style="font-size:12px;margin-top:4px">파티션 {{ t.partitions }}</div>{% endif %}</td>
+            <td style="text-align:right">{{ '{:,}'.format(t.delta_30s or 0) }}</td>
+            <td style="text-align:right">{{ '{:,}'.format(t.published_ok or 0) }}</td>
+            <td style="text-align:right" class="{{ 'amt-out' if (t.published_fail or 0) > 0 else '' }}">{{ '{:,}'.format(t.published_fail or 0) }}</td>
+            <td style="text-align:right">{{ '{:,}'.format(t.consumed or 0) }}</td>
+            <td>{{ t.last_published_ts or '–' }}</td>
+            <td>{{ t.last_consumed_ts or '–' }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% if kp.workers %}
+        <h4 style="margin:22px 0 8px">Kafka 워커 상태</h4>
+        <table class="cmp">
+          <thead><tr><th>워커</th><th>담당 토픽</th><th>상태</th><th style="text-align:right">처리 건수</th><th style="text-align:right">재시작</th><th>마지막 heartbeat</th><th>마지막 오류</th></tr></thead>
+          <tbody>
+          {% for w in kp.workers %}
+          <tr>
+            <td>{{ w.label }}</td>
+            <td class="grp">{{ w.topic or '–' }}</td>
+            <td><span class="lvl-badge {{ 'info' if w.level == 'good' else 'warning' }}">{{ '실행 중' if w.alive else '중단/대기' }}</span><div class="sub" style="font-size:12px;margin-top:4px">{{ w.status or '–' }}</div></td>
+            <td style="text-align:right">{{ '{:,}'.format(w.processed or 0) }}</td>
+            <td style="text-align:right">{{ '{:,}'.format(w.restarts or 0) }}</td>
+            <td>{{ w.last_seen or '–' }}</td>
+            <td class="sub" style="font-size:12px">{{ w.last_error or '–' }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% endif %}
+
+        <h4 style="margin:22px 0 8px">이 화면으로 뭘 알 수 있나요?</h4>
+        {% if kp.incidents %}
+        <table class="cmp">
+          <thead><tr><th>관찰 포인트</th><th>등급</th><th>값</th></tr></thead>
+          <tbody>
+          {% for i in kp.incidents %}
+          <tr>
+            <td>{{ i.message }}</td>
+            <td><span class="lvl-badge {{ i.level }}">{{ '주의' if i.level == 'warning' else '정보' }}</span></td>
+            <td>{{ i.value }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="sub" style="display:flex;align-items:center;gap:8px"><span class="status-dot ok"></span>현재는 이체요청 큐 랙이 없고, 감지된 발행 실패나 중단된 Kafka worker도 없어요.</p>
+        {% endif %}
+        {% else %}
+        <h4 style="margin:20px 0 8px">토픽</h4>
+        {% for t in panels.kafka.topics %}
+        <div class="info-row"><span>{{ t.purpose }}</span><b>{{ t.name }}</b></div>
+        {% endfor %}
+        <p class="sub" style="margin-top:14px">토픽별 메시지 수·컨슈머 랙 실측값을 불러오지 못했어요(브로커 응답 지연).</p>
+        {% endif %}
+      </div>
+
+      <!-- 캐시(Redis) -->
+      <div class="admin-panel" id="panel-cache" style="display:none">
+        <div class="sec-head">
+          <h3 style="margin:0">캐시(Redis)
+            <span class="help-tip" tabindex="0">?
+              <span class="help-tip-bubble">자주 쓰는 답을 미리 적어둔 메모장이에요. 히트율이 70~80% 이상이면 잘 쓰이고 있는 거예요. 메모리가 계속 늘기만 하면 오래된 데이터가 안 지워지는 신호예요.</span>
+            </span>
+          </h3>
+          {% if panels.cache.error %}
+            <span class="badge down">연결 안 됨</span>
+          {% else %}
+            <span class="badge up">연결됨</span>
+          {% endif %}
+        </div>
+        {% if panels.cache.error %}
+        <p class="sub">Redis에 연결할 수 없어요.</p>
+        {% else %}
+        <div class="info-row"><span>키 개수</span><b>{{ '{:,}'.format(panels.cache['keys'] or 0) }}</b></div>
+        <div class="info-row"><span>히트 / 미스</span><b>{{ '{:,}'.format(panels.cache.hits or 0) }} / {{ '{:,}'.format(panels.cache.misses or 0) }}</b></div>
+        <div class="info-row"><span>히트율</span><b>{{ panels.cache.hit_rate ~ '%' if panels.cache.hit_rate is not none else '–' }}</b></div>
+        <div class="info-row"><span>메모리 사용량</span><b>{{ panels.cache.used_memory_human or '–' }}</b></div>
+
+        {% if (panels.cache.hits or 0) + (panels.cache.misses or 0) > 0 %}
+        <div class="donut-wrap" style="margin-top:16px">
+          <div class="donut" style="background:conic-gradient(var(--money-in) {{ panels.cache.hit_deg }}deg, var(--line) 0deg)"></div>
+          <div class="donut-legend">
+            <span><span class="dot" style="background:var(--money-in)"></span>히트<b>{{ '{:,}'.format(panels.cache.hits or 0) }}</b></span>
+            <span><span class="dot" style="background:var(--line)"></span>미스<b>{{ '{:,}'.format(panels.cache.misses or 0) }}</b></span>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="ov-2col" style="margin-top:22px">
+          <div>
+            <h4 style="margin:0 0 6px">구간 히트율 추이 <span class="chart-real">실측</span></h4>
+            {{ line_chart(panels.cache.chart_hit, 'var(--money-in)') }}
+          </div>
+          <div>
+            <h4 style="margin:0 0 6px">메모리 사용량 추이 <span class="chart-real">실측</span></h4>
+            {{ line_chart(panels.cache.chart_mem, 'var(--primary)') }}
+          </div>
+        </div>
+
+        <form method="post" action="{{ url_for('admin_cache_flush') }}" style="margin-top:22px">
+          <button class="btn btn-ghost" type="submit">전체 캐시 비우기</button>
+        </form>
+
+        <h4 style="margin:22px 0 10px">종류별 비우기</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          {% for kind, label in cache_kinds %}
+          <form method="post" action="{{ url_for('admin_cache_flush_kind', kind=kind) }}">
+            <button class="btn btn-ghost" type="submit" style="padding:8px 14px;font-size:13px">{{ label }}</button>
+          </form>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- 검색엔진(ES) -->
+      <div class="admin-panel" id="panel-search" style="display:none">
+        <div class="sec-head">
+          <h3 style="margin:0">검색엔진(Elasticsearch)
+            <span class="help-tip" tabindex="0">?
+              <span class="help-tip-bubble">상품·금리 데이터를 빠르게 찾아주는 검색엔진이에요. 클러스터 상태가 green이면 정상이에요. 문서 수가 갑자기 줄면 데이터가 사라진 신호예요.</span>
+            </span>
+          </h3>
+          {% if panels.search.connected %}
+            <span class="badge up">연결됨</span>
+          {% else %}
+            <span class="badge down">연결 안 됨</span>
+          {% endif %}
+        </div>
+        {% if not panels.search.connected %}
+        <p class="sub">Elasticsearch에 연결할 수 없어요.</p>
+        {% else %}
+        <div class="info-row"><span>클러스터 상태</span><b>{{ panels.search.cluster_status or '–' }}</b></div>
+        <div class="info-row"><span>fss-products 문서 수</span><b>{{ '{:,}'.format(panels.search.products_count) if panels.search.products_count is not none else '–' }}</b></div>
+        <div class="info-row"><span>bok-keystat 문서 수</span><b>{{ '{:,}'.format(panels.search.keystat_count) if panels.search.keystat_count is not none else '–' }}</b></div>
+
+        {% if panels.search.bars %}
+        <h4 style="margin:22px 0 6px">인덱스별 문서 수 비교</h4>
+        <div class="ov-bars" style="height:110px">
+          {% for b in panels.search.bars %}
+          <div class="ov-bar">
+            <div class="ov-bar-fill" style="height:{{ b.pct }}%">
+              <span class="ov-bar-count">{{ '{:,}'.format(b.count) }}</span>
+            </div>
+            <div class="ov-bar-label">{{ b.label }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endif %}
+      </div>
+
+      <!-- 데이터베이스 -->
+      <div class="admin-panel" id="panel-db" style="display:none">
+        <div class="sec-head">
+          <h3 style="margin:0">데이터베이스 현황
+            <span class="help-tip" tabindex="0">?
+              <span class="help-tip-bubble">회원·계좌·거래 같은 핵심 데이터가 저장된 곳이에요. 회원수·거래건수는 시간이 지나며 늘어나는 게 자연스러워요. 최근 거래 목록에서 낯선 패턴이 있는지 훑어보면 좋아요.</span>
+            </span>
+          </h3>
+          {% if panels.db.error %}
+            <span class="badge down">조회 실패</span>
+          {% else %}
+            <span class="badge up">정상</span>
+          {% endif %}
+        </div>
+        {% if panels.db.error %}
+        <p class="sub">DB 통계를 불러오지 못했어요.</p>
+        {% else %}
+        <div class="info-row"><span>회원 수</span><b>{{ '{:,}'.format(panels.db.user_count) }}명</b></div>
+        <div class="info-row"><span>입출금계좌 총 잔액</span><b>{{ '{:,}'.format(panels.db.total_balance) }}원</b></div>
+        <div class="info-row"><span>누적 거래건수</span><b>{{ '{:,}'.format(panels.db.transaction_count) }}건</b></div>
+        <div class="info-row"><span>유효 가입상품 수</span><b>{{ '{:,}'.format(panels.db.active_subscription_count) }}건</b></div>
+        <div class="info-row"><span>누적 포인트 발급(순)</span><b>{{ '{:,}'.format(panels.db.net_points_issued) }}P</b></div>
+        {% endif %}
+
+        {% if panels.db.tx_deg is defined %}
+        <h4 style="margin:22px 0 6px">최근 거래 입금/출금 비율</h4>
+        <div class="donut-wrap">
+          <div class="donut" style="background:conic-gradient(var(--money-in) {{ panels.db.tx_deg }}deg, var(--money-out) 0deg)"></div>
+          <div class="donut-legend">
+            <span><span class="dot" style="background:var(--money-in)"></span>입금<b>{{ panels.db.tx_in_cnt }}건</b></span>
+            <span><span class="dot" style="background:var(--money-out)"></span>출금<b>{{ panels.db.tx_out_cnt }}건</b></span>
+          </div>
+        </div>
+        {% endif %}
+
+        <h4 style="margin:22px 0 10px">최근 거래 {{ panels.recent_tx|length }}건</h4>
+        {% if panels.recent_tx %}
+        <table class="cmp">
+          <thead><tr><th>일시</th><th>회원</th><th>계좌</th><th>구분</th><th>상대</th>
+            <th style="text-align:right">금액</th><th style="text-align:right">거래후잔액</th></tr></thead>
+          <tbody>
+          {% for t in panels.recent_tx %}
+          <tr>
+            <td>{{ t.created_at[5:16] }}</td>
+            <td>{{ t.user_name }}</td>
+            <td class="grp">{{ t.account_no }}</td>
+            <td>{{ t.kind }}</td>
+            <td>{{ t.counterpart }}</td>
+            <td style="text-align:right" class="{{ 'amt-in' if t.kind=='입금' else 'amt-out' }}">
+              {{ '+' if t.kind=='입금' else '-' }}{{ '{:,}'.format(t.amount) }}</td>
+            <td style="text-align:right">{{ '{:,}'.format(t.balance_after) }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="sub">거래내역이 없어요.</p>
+        {% endif %}
+      </div>
+
+      <!-- 상담봇 지식베이스 -->
+      <div class="admin-panel" id="panel-kb" style="display:none">
+        <div class="sec-head">
+          <h3 style="margin:0">상담봇 지식베이스
+            <span class="help-tip" tabindex="0">?
+              <span class="help-tip-bubble">상담봇이 답할 때 참고하는 자료예요. 카테고리별 문서 수가 0이면 그 주제는 답을 잘 못해요. 문서를 늘리면 더 정확한 답을 줘요.</span>
+            </span>
+          </h3>
+          {% if panels.kb.error %}
+            <span class="badge down">조회 실패</span>
+          {% else %}
+            <span class="badge up">정상</span>
+          {% endif %}
+        </div>
+        {% if panels.kb.error %}
+        <p class="sub">지식베이스 상태를 불러오지 못했어요.</p>
+        {% else %}
+        <div class="info-row"><span>전체 색인 조각 수</span><b>{{ '{:,}'.format(panels.kb.total_chunks) }}</b></div>
+        <h4 style="margin:20px 0 8px">폴더별 현황</h4>
+        {% if panels.kb.folders %}
+        {% for f in panels.kb.folders %}
+        <div class="info-row"><span>{{ f.folder }}</span><b>문서 {{ f.sources }}건 · 조각 {{ f.chunks }}개</b></div>
+        {% endfor %}
+
+        {% if panels.overview.kb_bars %}
+        <h4 style="margin:22px 0 6px">카테고리별 문서 수</h4>
+        <div class="ov-bars">
+          {% for b in panels.overview.kb_bars %}
+          <div class="ov-bar">
+            <div class="ov-bar-fill" style="height:{{ b.pct }}%">
+              <span class="ov-bar-count">{{ b.count }}</span>
+            </div>
+            <div class="ov-bar-label">{{ b.label }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% else %}
+        <p class="sub">색인된 문서가 없어요. seed_consult_kb.py를 실행하면 상담FAQ가 채워져요.</p>
+        {% endif %}
+        {% endif %}
+      </div>
+
+      <!-- 실시간 상담 -->
+      <div class="admin-panel" id="panel-consult" style="display:none">
+        <div class="sec-head">
+          <h3 style="margin:0">실시간 상담
+            <span class="help-tip" tabindex="0">?
+              <span class="help-tip-bubble">지금까지 상담 채팅이 오간 채널 현황이에요. '활동'은 서버가 켜진 이후 누적 기준이라 지금 접속 중이란 뜻은 아니에요.</span>
+            </span>
+          </h3>
+          {% if panels.consult.error %}
+            <span class="badge down">조회 실패</span>
+          {% else %}
+            <span class="badge up">정상</span>
+          {% endif %}
+        </div>
+        {% if panels.consult.error %}
+        <p class="sub">상담 현황을 불러오지 못했어요.</p>
+        {% else %}
+        <div class="info-row"><span>이번 서버 실행 중 활동한 채널</span><b>{{ '{:,}'.format(panels.consult.active_channels) }}개</b></div>
+        <div class="info-row"><span>누적 메시지 수</span><b>{{ '{:,}'.format(panels.consult.total_messages) }}건</b></div>
+        <p class="sub" style="margin-top:8px">'활동'은 서버가 켜진 이후 기준이에요. 지금 접속 중인지 여부와는 달라요.</p>
+        <h4 style="margin:20px 0 8px">최근 활동 채널 (상위 10개)</h4>
+        {% if panels.consult.channels %}
+        <div class="ov-bars" style="height:110px">
+          {% for c in panels.consult.channels %}
+          <div class="ov-bar">
+            <div class="ov-bar-fill" style="height:{{ c.pct }}%">
+              <span class="ov-bar-count">{{ c.message_count }}</span>
+            </div>
+            <div class="ov-bar-label">{{ c.channel }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        <table class="cmp" style="margin-top:18px">
+          <thead><tr><th>채널</th><th style="text-align:right">메시지 수</th><th>마지막 시각</th></tr></thead>
+          <tbody>
+          {% for c in panels.consult.channels %}
+          <tr><td>{{ c.channel }}</td><td style="text-align:right">{{ c.message_count }}</td><td>{{ c.last_ts or '–' }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="sub">아직 활동한 채널이 없어요.</p>
+        {% endif %}
+        {% endif %}
+      </div>
+
+      <!-- 피닉스(LLM 추적) -->
+      <div class="admin-panel" id="panel-phoenix" style="display:none">
+        <h3 style="margin:0 0 10px">피닉스(LLM 추적)
+          <span class="help-tip" tabindex="0">?
+            <span class="help-tip-bubble">AI가 답변 만들 때 걸린 시간·비용을 기록하는 도구예요. 버튼을 눌러 들어가면 느려진 질문이 있는지 자세히 볼 수 있어요.</span>
+          </span>
+        </h3>
+        <p class="sub">Upstage Solar(RAG·챗봇·상담봇) 호출이 OpenTelemetry로 자동 추적돼요. 응답시간·토큰·프롬프트 같은 상세 트레이스를 아래 화면에서 바로 확인하세요. (이 패널을 보는 동안은 화면이 초기화되지 않도록 자동 새로고침이 멈춰요.)</p>
+        <a href="{{ panels.phoenix.url }}" target="_blank" rel="noopener" class="btn btn-ghost" style="margin:14px 0">새 창에서 열기 →</a>
+        <iframe src="{{ panels.phoenix.url }}" class="phoenix-frame" title="피닉스(LLM 추적)"></iframe>
+      </div>
+
+      <!-- 키바나(ES 모니터링) -->
+      <div class="admin-panel" id="panel-kibana" style="display:none">
+        <h3 style="margin:0 0 10px">키바나(ES 모니터링)
+          <span class="help-tip" tabindex="0">?
+            <span class="help-tip-bubble">엘라스틱서치에 쌓인 상품 데이터를 직접 보고 그래프로 그릴 수 있는 도구예요. Discover에서 색인된 문서를 훑어보거나, Stack Monitoring에서 검색엔진 상태를 볼 수 있어요.</span>
+          </span>
+        </h3>
+        <p class="sub">엘라스틱서치에 색인된 데이터를 Discover에서 바로 탐색해요. <b>이체 이벤트(bank-transfers)</b>에는 추가한 이체 컬럼(받는분·잔액·금액구간·채널·접속IP·시간대 등)이 모두 들어 있어요. 아래 버튼으로 데이터 뷰를 바꿔 볼 수 있어요. (이 패널을 보는 동안은 화면이 초기화되지 않도록 자동 새로고침이 멈춰요.)</p>
+        {% if panels.kibana.views %}
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin:14px 0">
+          {% for v in panels.kibana.views %}
+          <button type="button" class="btn btn-ghost kb-view-btn{{ ' on' if v.title == 'bank-transfers' }}"
+                  data-src="{{ v.url }}" style="padding:8px 14px;font-size:13px">{{ v.name }}</button>
+          {% endfor %}
+          <a href="{{ panels.kibana.discover }}" target="_blank" rel="noopener" class="btn btn-ghost" style="padding:8px 14px;font-size:13px">새 창에서 열기 →</a>
+        </div>
+        {% else %}
+        <a href="{{ panels.kibana.url }}" target="_blank" rel="noopener" class="btn btn-ghost" style="margin:14px 0">새 창에서 열기 →</a>
+        {% endif %}
+        <iframe id="kibana-frame" src="{{ panels.kibana.discover }}" class="phoenix-frame" title="키바나(ES 모니터링)"></iframe>
+      </div>
+
+      <!-- 챗봇 프롬프트 매니저 -->
+      <div class="admin-panel" id="panel-prompts" style="display:none">
+        <h3 style="margin:0 0 10px">챗봇 프롬프트
+          <span class="help-tip" tabindex="0">?
+            <span class="help-tip-bubble">챗봇이 답변할 때 지키는 규칙(시스템 프롬프트)이에요. 프롬프트 안에 {{변수명}}을 넣으면 아래 "프롬프트 변수"에 저장한 값으로 자동 치환돼요. 여기서 고치면 코드 수정·재시작 없이 다음 답변부터 바로 반영돼요.</span>
+          </span>
+        </h3>
+
+        <div class="panel" style="margin-top:16px">
+          <h4 style="margin:0 0 6px">프롬프트 변수</h4>
+          <p class="sub" style="margin:0 0 14px">프롬프트 본문에 <code>{{ '{{BOT_NAME}}' }}</code>처럼 넣으면 실제 답변을 만들 때 아래 값으로 바뀌어요.</p>
+          {% for v in panels.variables %}
+          <form method="post" action="{{ url_for('admin_variable_save') }}" style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+            <input type="hidden" name="name" value="{{ v.name }}">
+            <span class="grp" style="min-width:140px">{{ '{{' }}{{ v.name }}{{ '}}' }}</span>
+            <input name="value" value="{{ v.value }}" style="flex:1;border:1.5px solid var(--line);
+              border-radius:var(--radius-sm);padding:8px 12px;font-size:14px">
+            <button class="btn btn-ghost" style="padding:8px 14px;font-size:13px" type="submit">저장</button>
+          </form>
+          {% endfor %}
+          <form method="post" action="{{ url_for('admin_variable_save') }}" style="display:flex;gap:8px;align-items:center;margin-top:10px">
+            <input name="name" placeholder="새 변수 이름 (예: CENTER_PHONE)" style="width:180px;border:1.5px solid var(--line);
+              border-radius:var(--radius-sm);padding:8px 12px;font-size:14px">
+            <input name="value" placeholder="값" style="flex:1;border:1.5px solid var(--line);
+              border-radius:var(--radius-sm);padding:8px 12px;font-size:14px">
+            <button class="btn btn-primary" style="padding:8px 14px;font-size:13px" type="submit">추가</button>
+          </form>
+        </div>
+
+        {% for p in panels.prompts %}
+        <form method="post" action="{{ url_for('admin_prompt_save') }}" class="panel" style="margin-top:16px">
+          <input type="hidden" name="key" value="{{ p.key }}">
+          <div class="sec-head" style="margin-bottom:10px">
+            <h4 style="margin:0">{{ p.label }}</h4>
+            <span class="sub">최근 수정 {{ p.updated_at }}</span>
+          </div>
+          <textarea name="content" rows="8" style="width:100%;border:1.5px solid var(--line);
+            border-radius:var(--radius-sm);padding:12px;font-size:14px;font-family:inherit">{{ p.content }}</textarea>
+          <button class="btn btn-primary" style="margin-top:12px" type="submit">저장</button>
+        </form>
+        {% endfor %}
+      </div>
+
+      <!-- AI 에이전트: 모니터링 -->
+      <div class="admin-panel" id="panel-agents" style="display:none">
+        <div class="sec-head">
+          <h3 style="margin:0">에이전트 모니터링
+            <span class="help-tip" tabindex="0">?
+              <span class="help-tip-bubble">고객 에이전트와 관리자 에이전트 호출을 최근 1시간 기준으로 모아서 보여줍니다. 성공률, p95 지연, 도메인별 호출량, 최근 실패 로그를 같이 보면 어느 에이전트가 느려지거나 깨졌는지 바로 파악할 수 있어요.</span>
+            </span>
+          </h3>
+          {% if panels.agents.summary.success_rate is none %}
+            <span class="badge">집계중</span>
+          {% elif panels.agents.summary.success_rate >= 97 %}
+            <span class="badge up">안정</span>
+          {% elif panels.agents.summary.success_rate >= 90 %}
+            <span class="badge" style="background:#fdf2df;color:#b5750a">주의</span>
+          {% else %}
+            <span class="badge down">경고</span>
+          {% endif %}
+        </div>
+        <p class="sub" style="margin-top:0">{{ panels.agents.summary.window_label }} 기준. 마지막 호출 {{ panels.agents.summary.last_when or '없음' }}</p>
+
+        <div class="ov-grid">
+          {% for c in panels.agents.summary_cards %}
+          <div class="ov-card">
+            <div class="ov-value">{{ c.value }}</div>
+            <div class="ov-label" style="margin-top:6px">{{ c.label }}</div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="ov-2col" style="margin-top:22px">
+          <div class="panel agent-mini-panel" style="margin-top:0">
+            <h4 style="margin:0 0 10px">유입 경로 비중</h4>
+            <div class="donut-wrap">
+              <div class="donut" style="background:conic-gradient(var(--primary) {{ panels.agents.route_customer_deg }}deg, #dbe4ff 0deg)"></div>
+              <div class="donut-legend">
+                {% for r in panels.agents.route_split %}
+                <span>
+                  <span class="dot" style="background:{{ 'var(--primary)' if loop.index0 == 0 else '#dbe4ff' }}"></span>
+                  {{ r.label }}<b>{{ r.count }}건</b> ({{ r.pct }}%)
+                </span>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <div class="panel agent-mini-panel" style="margin-top:0">
+            <h4 style="margin:0 0 10px">도메인별 트래픽 비중</h4>
+            <div class="ov-bars" style="height:120px">
+              {% for d in panels.agents.domains %}
+              <div class="ov-bar">
+                <div class="ov-bar-fill" style="height:{{ d.share_pct if d.share_pct > 0 else 3 }}%;background:{{ d.color }}">
+                  <span class="ov-bar-count">{{ d.calls }}</span>
+                </div>
+                <div class="ov-bar-label">{{ d.label }}</div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="ov-2col" style="margin-top:24px">
+          <div>
+            <h4 style="margin:0 0 6px">호출 수 추이 <span class="chart-real">실측</span></h4>
+            {{ line_chart(panels.agents.chart_calls, 'var(--primary)') }}
+          </div>
+          <div>
+            <h4 style="margin:0 0 6px">p95 지연 추이 <span class="chart-real">실측</span></h4>
+            {{ line_chart(panels.agents.chart_p95, 'var(--money-out)') }}
+          </div>
+        </div>
+        <div class="ov-2col" style="margin-top:20px">
+          <div>
+            <h4 style="margin:0 0 6px">성공률 추이 <span class="chart-real">실측</span></h4>
+            {{ line_chart(panels.agents.chart_success, 'var(--money-in)') }}
+          </div>
+          <div>
+            <h4 style="margin:0 0 6px">에러율 추이 <span class="chart-real">실측</span></h4>
+            {{ line_chart(panels.agents.chart_errors, 'var(--money-out)') }}
+          </div>
+        </div>
+
+        <h4 style="margin:26px 0 12px">도메인별 상세</h4>
+        <div class="agent-domain-grid">
+          {% for d in panels.agents.domains %}
+          <div class="agent-domain-card {{ d.level }}">
+            <div class="agent-domain-head">
+              <div>
+                <h4 style="margin:0">{{ d.label }}</h4>
+                <p class="sub" style="margin:4px 0 0">마지막 호출 {{ d.last_when or '없음' }}</p>
+              </div>
+              <span class="badge" style="background:{{ d.color }};color:#fff">{{ d.calls }}건</span>
+            </div>
+            <div class="agent-domain-meter">
+              <div class="agent-domain-meter-fill" style="width:{{ d.bar_pct }}%;background:{{ d.color }}"></div>
+            </div>
+            <div class="agent-domain-stats">
+              <span>성공률 <b>{{ d.success_rate ~ '%' if d.success_rate is not none else '–' }}</b></span>
+              <span>평균 <b>{{ d.avg_ms ~ 'ms' if d.avg_ms is not none else '–' }}</b></span>
+              <span>p95 <b>{{ d.p95_ms ~ 'ms' if d.p95_ms is not none else '–' }}</b></span>
+              <span>실패 <b>{{ d.fail }}건</b></span>
+            </div>
+            <div class="agent-domain-spark">{{ spark(d.call_chart, d.color) }}</div>
+            {% if d.last_message %}
+            <p class="sub" style="margin:10px 0 0">최근 질의: {{ d.last_message }}</p>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+
+        <h4 style="margin:26px 0 10px">에이전트 경고</h4>
+        {% if panels.agents.incidents %}
+        <table class="cmp">
+          <thead><tr><th>항목</th><th>수준</th><th style="text-align:right">값</th></tr></thead>
+          <tbody>
+          {% for i in panels.agents.incidents %}
+          <tr>
+            <td>{{ i.message }}</td>
+            <td><span class="lvl-badge {{ i.level }}">{{ '주의' if i.level == 'warning' else '정보' }}</span></td>
+            <td style="text-align:right">{{ i.value }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="sub" style="display:flex;align-items:center;gap:8px"><span class="status-dot ok"></span>최근 1시간 기준 특이 경고가 없습니다.</p>
+        {% endif %}
+
+        <h4 style="margin:26px 0 10px">최근 호출 로그</h4>
+        {% if panels.agents.recent %}
+        <table class="cmp agent-log-table">
+          <thead><tr><th>시각</th><th>도메인</th><th>출처</th><th>경로</th><th>사용자</th><th>상태</th><th style="text-align:right">지연</th><th>시나리오/질의</th><th>에러</th></tr></thead>
+          <tbody>
+          {% for r in panels.agents.recent %}
+          <tr>
+            <td>{{ r.when }}</td>
+            <td><span class="agent-domain-chip" style="background:{{ r.color }}">{{ r.label }}</span></td>
+            <td><span class="agent-source-chip {{ r.source }}">{{ '테스트' if r.source == 'test' else '웹' }}</span></td>
+            <td>{{ '고객' if r.route == 'customer' else '관리자' }}</td>
+            <td>{{ r.user_id or '–' }}</td>
+            <td><span class="lvl-badge {{ 'info' if r.ok else 'warning' }}">{{ '성공' if r.ok else '실패' }}</span></td>
+            <td style="text-align:right">{{ r.elapsed_ms }}ms</td>
+            <td class="agent-log-text">
+              {% if r.scenario_label %}<b>{{ r.scenario_label }}</b><br>{% endif %}
+              {{ r.message or '–' }}
+            </td>
+            <td class="agent-log-text">{{ r.error or '–' }}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p class="sub">아직 에이전트 호출 로그가 없습니다.</p>
+        {% endif %}
+      </div>
+
+      <!-- AI 에이전트: 이상거래탐지 -->
+      <div class="admin-panel" id="panel-fraud" style="display:none">
+        <h3 style="margin:0 0 6px">이상거래탐지 에이전트</h3>
+        <p class="sub" style="margin:0 0 14px">이체 데이터(ES)를 분석해 위험 신호를 찾아요. 예) "user_id 24 최근 이체 위험도 점검", "오늘 심야 이체 확인"</p>
+        <div class="agent-console" data-domain="fraud">
+          <textarea class="agent-q" rows="2" placeholder="질의를 입력하세요 (예: user_id 24 이상거래 점검)"></textarea>
+          <button class="btn btn-primary agent-run" type="button">분석</button>
+          <div class="agent-out sub">결과가 여기에 표시돼요.</div>
+        </div>
+      </div>
+
+      <!-- AI 에이전트: 여신심사 -->
+      <div class="admin-panel" id="panel-credit" style="display:none">
+        <h3 style="margin:0 0 6px">여신심사 에이전트</h3>
+        <p class="sub" style="margin:0 0 14px">신청자 프로필·규칙기반 점수로 대출 심사 의견을 내요(데모). 예) "user_id 1 신용대출 심사"</p>
+        <div class="agent-console" data-domain="credit">
+          <textarea class="agent-q" rows="2" placeholder="질의를 입력하세요 (예: user_id 1 신용대출 심사 의견)"></textarea>
+          <button class="btn btn-primary agent-run" type="button">심사</button>
+          <div class="agent-out sub">결과가 여기에 표시돼요.</div>
+        </div>
+      </div>
+
+      <!-- AI 에이전트: 컴플라이언스 -->
+      <div class="admin-panel" id="panel-compliance" style="display:none">
+        <h3 style="margin:0 0 6px">컴플라이언스 에이전트</h3>
+        <p class="sub" style="margin:0 0 14px">자금세탁·고액신고·구조화 의심을 점검해요. 예) "오늘 고액이체 점검", "user_id 24 AML 스크리닝"</p>
+        <div class="agent-console" data-domain="compliance">
+          <textarea class="agent-q" rows="2" placeholder="질의를 입력하세요 (예: 고액이체 컴플라이언스 점검)"></textarea>
+          <button class="btn btn-primary agent-run" type="button">점검</button>
+          <div class="agent-out sub">결과가 여기에 표시돼요.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const ADMIN_PANEL_KEY = 'finpick-admin-panel';
+
+  function showPanel(name){
+    document.querySelectorAll('.admin-nav-item').forEach(b => b.classList.toggle('on', b.dataset.panel === name));
+    document.querySelectorAll('.admin-panel').forEach(p => p.style.display = 'none');
+    const el = document.getElementById('panel-' + name);
+    if(el) el.style.display = '';
+  }
+
+  document.querySelectorAll('.admin-nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      localStorage.setItem(ADMIN_PANEL_KEY, btn.dataset.panel);
+      showPanel(btn.dataset.panel);
+    });
+  });
+
+  // 새로고침해도 보던 패널 유지
+  const saved = localStorage.getItem(ADMIN_PANEL_KEY);
+  if(saved && document.getElementById('panel-' + saved)) showPanel(saved);
+
+  // 키바나 데이터 뷰 버튼 → iframe src만 교체(패널 새로고침 없이 데이터 뷰 전환)
+  document.querySelectorAll('.kb-view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const frame = document.getElementById('kibana-frame');
+      if(frame) frame.src = btn.dataset.src;
+      document.querySelectorAll('.kb-view-btn').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+    });
+  });
+
+  // AI 에이전트 콘솔: 질의를 해당 도메인 엔드포인트로 보내고 결과 표시.
+  document.querySelectorAll('.agent-console').forEach(box => {
+    const domain = box.dataset.domain;
+    const btn = box.querySelector('.agent-run');
+    const q = box.querySelector('.agent-q');
+    const out = box.querySelector('.agent-out');
+    async function run(){
+      const message = q.value.trim();
+      if(!message) return;
+      btn.disabled = true; out.classList.remove('sub'); out.textContent = '분석 중…';
+      try{
+        const r = await fetch('/admin/agent/' + domain, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({message})
+        });
+        const data = await r.json();
+        out.textContent = data.answer || data.error || '응답을 받지 못했어요.';
+      }catch(e){ out.textContent = '에이전트 연결 오류가 발생했어요.'; }
+      finally{ btn.disabled = false; }
+    }
+    btn.addEventListener('click', run);
+    q.addEventListener('keydown', e => { if(e.key==='Enter' && (e.ctrlKey||e.metaKey)) run(); });
+  });
+
+  // 30초마다 자동 새로고침 (최신 상태 반영).
+  // 단, iframe 도구(키바나·피닉스)와 에이전트 콘솔은 화면이 초기화되면 안 되므로
+  // 그 패널을 보는 동안엔 새로고침을 건너뛴다.
+  const NO_RELOAD_PANELS = ['kibana', 'phoenix', 'fraud', 'credit', 'compliance'];
+  function currentPanel(){
+    const on = document.querySelector('.admin-nav-item.on');
+    return on ? on.dataset.panel : null;
+  }
+  setInterval(() => {
+    if(!NO_RELOAD_PANELS.includes(currentPanel())) location.reload();
+  }, 30000);
+</script>
+{% endblock %}

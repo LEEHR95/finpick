@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}마이페이지 · {{ bank_name }}{% endblock %}
+{% block body %}
+<section class="section"><div class="container">
+  <h2>마이페이지</h2>
+  <p class="sub">{{ user.name }}님의 금융 현황</p>
+
+  <div class="grid-2">
+    <div>
+      <!-- 순자산 요약 -->
+      <div class="acct-card">
+        <div class="label">순자산 (자산 − 부채)</div>
+        <div class="bal">{{ '{:,}'.format(net) }}<small> 원</small></div>
+        <div style="margin-top:10px;opacity:.85;font-size:13px">
+          자산 {{ '{:,}'.format(total_assets) }}원 · 부채 {{ '{:,}'.format(total_debts) }}원
+        </div>
+      </div>
+
+      <!-- 회원 정보 -->
+      <div class="panel" style="margin-top:16px">
+        <h3>내 정보</h3>
+        <div class="info-row"><span>이름</span><b>{{ user.name }}</b></div>
+        <div class="info-row"><span>아이디</span><b>{{ user.username }}</b></div>
+        <div class="info-row"><span>가입일</span><b>{{ user.created_at[:10] }}</b></div>
+        <a href="{{ url_for('logout') }}" class="btn btn-ghost btn-block" style="margin-top:14px">로그아웃</a>
+      </div>
+
+      <!-- 픽앤업 포인트 -->
+      <div class="panel" style="margin-top:16px">
+        <div class="sec-head" style="margin-bottom:12px">
+          <h3 style="margin:0">픽앤업 포인트</h3>
+          <a href="{{ url_for('learn') }}" class="more-link">공부하고 포인트 받기 →</a>
+        </div>
+        <div class="info-row"><span>보유 포인트</span><b>{{ '{:,}'.format(points) }}P</b></div>
+        <div class="info-row"><span>픽앤업 통장 잔액</span><b>{{ '{:,}'.format(point_balance) }}원</b></div>
+        <div class="info-row"><span>현재 우대금리</span><b class="rate-cell">{{ '%.2f'|format(point_rate) }}%</b></div>
+        <a href="{{ url_for('pickup_money') }}" class="btn btn-ghost btn-block" style="margin-top:14px">머니 전환하러 가기</a>
+      </div>
+    </div>
+
+    <div>
+      <!-- 내 계좌: 조회 페이지로 안내만, 잔액/이체는 전체계좌조회에서 -->
+      <div class="panel">
+        <div class="sec-head" style="margin-bottom:12px">
+          <h3 style="margin:0">내 계좌 {{ accounts|length }}개</h3>
+          <a href="{{ url_for('accounts') }}" class="more-link">전체계좌조회 →</a>
+        </div>
+        <div class="info-row"><span>입출금 합계</span><b>{{ '{:,}'.format(accounts|sum(attribute='balance')) }}원</b></div>
+        <a href="{{ url_for('transfer') }}" class="btn btn-primary btn-block" style="margin-top:20px">이체하기</a>
+      </div>
+
+      <!-- 가입·이용 상품 -->
+      <div class="panel" style="margin-top:16px">
+        <div class="sec-head" style="margin-bottom:12px">
+          <h3 style="margin:0">가입·이용 상품 {{ subscriptions|length }}건</h3>
+          <a href="{{ url_for('products') }}" class="more-link">상품 →</a>
+        </div>
+        {% if subscriptions %}
+          {% for s in subscriptions %}
+          <div class="info-row">
+            <span>{{ s.product_name }} <span class="grp">{{ s.ptype }}</span></span>
+            <b class="rate-cell">{{ '%.2f'|format(s.rate) }}%</b>
+          </div>
+          {% endfor %}
+        {% else %}
+        <p class="sub" style="margin:0">아직 가입한 상품이 없어요. <a href="{{ url_for('products') }}" class="more-link">둘러보기 →</a></p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div></section>
+{% endblock %}

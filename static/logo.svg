@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 152 34" width="152" height="34" role="img" aria-label="FinPick">
+  <rect width="34" height="34" rx="9" fill="#5308C4"/>
+  <path d="M9.5 17.5 L14.5 22.5 L24.5 11" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="27.6" cy="7" r="2" fill="#C4A6FF"/>
+  <text x="44" y="24" font-family="'Segoe UI','Malgun Gothic',sans-serif" font-size="21" font-weight="800" letter-spacing="-0.5">
+    <tspan fill="#1c1c1e">Fin</tspan><tspan fill="#5308C4">Pick</tspan>
+  </text>
+</svg>

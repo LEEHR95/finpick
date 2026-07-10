@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}이체 · {{ bank_name }}{% endblock %}
+{% block body %}
+<section class="section"><div class="container">
+  <h2>계좌이체</h2>
+  <p class="sub">받는 은행과 계좌를 확인한 뒤 이체합니다.</p>
+
+  <div class="grid-2">
+    <div class="panel">
+      {% if step == 2 %}
+        <!-- 2단계: 받는분 확인 + 금액 -->
+        <h3>받는 분 확인</h3>
+        <div class="confirm-box">
+          <div class="row"><span>출금 계좌</span><b>{{ from_account_no }}</b></div>
+          <div class="row"><span>받는 은행</span><b>{{ bank }}</b></div>
+          <div class="row"><span>계좌번호</span><b>{{ to_account }}</b></div>
+          <div class="row"><span>받는 분</span>
+            {% if recipient %}<b class="ok-name">{{ recipient }}님</b>
+            {% else %}<b class="demo-name">확인 불가 (타행·데모)</b>{% endif %}
+          </div>
+        </div>
+        <form method="post" style="margin-top:16px">
+          <input type="hidden" name="action" value="execute">
+          <input type="hidden" name="bank" value="{{ bank }}">
+          <input type="hidden" name="to_account" value="{{ to_account }}">
+          <input type="hidden" name="from_account" value="{{ from_account }}">
+          <div class="field">
+            <label>이체 금액 (원)</label>
+            <input name="amount" inputmode="numeric" placeholder="50000" autofocus required>
+          </div>
+          <div class="field">
+            <label>메모 (선택)</label>
+            <input name="memo" placeholder="받는 분에게 표시할 내용">
+          </div>
+          <label class="async-toggle">
+            <input type="checkbox" name="async_mode" value="1">
+            <span>카프카 큐로 비동기 처리
+              <em>요청을 줄 세워 순차 처리해요. 접수 후 잠시 뒤 거래내역에 반영돼요.</em>
+            </span>
+          </label>
+          <button class="btn btn-primary btn-block btn-lg" type="submit">이체하기</button>
+        </form>
+        <a href="{{ url_for('transfer') }}" class="btn btn-ghost btn-block" style="margin-top:8px">← 다시 입력</a>
+      {% else %}
+        <!-- 1단계: 은행 선택 + 계좌번호 -->
+        <h3>어디로 보낼까요?</h3>
+        <form method="post">
+          <input type="hidden" name="action" value="lookup">
+          <div class="field">
+            <label>출금 계좌</label>
+            <select name="from_account">
+              {% for a in accounts %}
+              <option value="{{ a.id }}">{{ '픽앤업 통장' if a.acct_type == 'point' else 'FinPick 입출금통장' }} · {{ a.account_no }} ({{ '{:,}'.format(a.balance) }}원)</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label>받는 은행</label>
+            <select name="bank">
+              {% for b in banks %}
+              <option value="{{ b }}">{{ b }}{% if b == 'FinPick' %} (본행){% endif %}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label>받는 계좌번호</label>
+            <input name="to_account" placeholder="100-000-000000" autofocus required>
+          </div>
+          <button class="btn btn-primary btn-block btn-lg" type="submit">다음</button>
+        </form>
+      {% endif %}
+    </div>
+
+    <div>
+      {% for a in accounts %}
+      <div class="acct-card">
+        <div class="label">출금 계좌</div>
+        <div class="no">{{ a.account_no }}</div>
+        <div class="bal">{{ '{:,}'.format(a.balance) }}<small> 원</small></div>
+      </div>
+      {% endfor %}
+      <div class="panel">
+        <h3>안내</h3>
+        <p class="sub" style="margin:0">
+          <b>FinPick(본행)</b>으로 보내면 받는 분 이름이 조회돼요. 테스트는
+          받는 계좌에 다른 회원 계좌번호(예: <code>100-137-174001</code>)를 넣으면 됩니다.<br><br>
+          <b>타행</b>(국민·신한 등)은 데모라 예금주 조회 없이 출금만 처리돼요.
+        </p>
+      </div>
+    </div>
+  </div>
+</div></section>
+{% endblock %}

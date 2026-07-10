@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}FinPick 상품 · {{ bank_name }}{% endblock %}
+{% block body %}
+<section class="section"><div class="container">
+  <h2>FinPick 상품</h2>
+  <p class="sub">핀픽이 직접 제공하는 상품이에요. 로그인 후 바로 가입할 수 있어요.</p>
+
+  <form class="hero-search" action="{{ url_for('products') }}" method="get"
+        style="max-width:600px;margin-bottom:22px">
+    <input name="q" value="{{ q }}" placeholder="AI 검색 예) 목돈 굴리기 좋은 예금"
+           style="border:1.5px solid var(--line)">
+    <button class="btn btn-primary btn-lg" type="submit">AI 검색</button>
+  </form>
+
+  {% if mode == 'search' %}
+    <h3 style="margin:6px 0 16px">‘{{ q }}’ 검색 결과</h3>
+    {% if results %}
+    <div class="cards">
+      {% for r in results %}
+      <div class="card">
+        <span class="tag">{{ r.type }}</span>
+        <h3>{{ r.name }}</h3>
+        <div class="co">{{ r.co }} · {{ r.grp }}</div>
+        {% if r.rate %}<div class="big">{{ '%.2f'|format(r.rate) }}<small> % (12개월)</small></div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<p>검색 결과가 없습니다.</p>{% endif %}
+    <p style="margin-top:18px"><a href="{{ url_for('products') }}" class="more-link">← FinPick 상품으로</a></p>
+
+  {% else %}
+    <!-- 카테고리 탭 -->
+    <div class="tabs">
+      {% for t in cat_tabs %}
+      <a href="{{ url_for('products', cat=t) }}" class="tab {{ 'on' if t == active_cat }}">{{ t }}</a>
+      {% endfor %}
+    </div>
+
+    <!-- 핀픽 상품 카드 -->
+    <div class="cards">
+      {% for p in items %}
+      <div class="card">
+        <span class="tag">{{ p.type }}</span>
+        <h3>{{ p.name }}</h3>
+        <div class="co">{{ p.desc }}</div>
+        <div class="big">{% if p.rate_text %}<span style="font-size:22px">{{ p.rate_text }}</span>{% else %}{{ '%.2f'|format(p.rate) }}<small> % · {{ p.sub }}</small>{% endif %}</div>
+        {% set st = mstats.get(p.type) %}
+        {% if st %}
+        <div class="cmp-note">
+          {% if p.kind == '대출' %}
+            {% set diff = p.rate - st.avg %}
+            시중 평균 {{ st.avg }}% · 최저 {{ st.min }}%
+            <span class="badge {{ 'up' if diff <= 0 else 'down' }}">평균 대비 {{ '%+.2f'|format(diff) }}%p</span>
+          {% else %}
+            {% set diff = p.rate - st.avg %}
+            시중 평균 {{ st.avg }}% · 최고 {{ st.max }}%
+            <span class="badge {{ 'up' if diff >= 0 else 'down' }}">평균 대비 {{ '%+.2f'|format(diff) }}%p</span>
+          {% endif %}
+        </div>
+        {% endif %}
+        <div class="grow"></div>
+        <a href="{{ url_for('subscribe', code=p.code) }}" class="btn btn-primary btn-block">{{ '대출받기' if p.kind == '대출' else '가입하기' }}</a>
+      </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div></section>
+{% endblock %}
