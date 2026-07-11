@@ -17,7 +17,13 @@ import hashlib
 import redis
 
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
-_r = redis.Redis.from_url(REDIS_URL, decode_responses=True)
+_r = redis.Redis.from_url(
+    REDIS_URL,
+    decode_responses=True,
+    socket_connect_timeout=0.3,
+    socket_timeout=0.3,
+    retry_on_timeout=False,
+)
 
 # --------------------------- 캐시 정책 (3단계에서 조정) ---------------------------
 TTL_EMBED = 60 * 60 * 24 * 7   # 질문 임베딩: 7일 (같은 질문은 의미 안 변함)

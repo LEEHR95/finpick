@@ -269,7 +269,12 @@ def _search_transfers(query, size=50, aggs=None):
     if aggs is not None:
         body["aggs"] = aggs
         body["size"] = 0
-    return es.search(index=TRANSFER_INDEX, **body)
+    try:
+        client = es.options(request_timeout=2, max_retries=0, retry_on_timeout=False)
+        return client.search(index=TRANSFER_INDEX, **body)
+    except Exception as e:
+        print(f"[agent] 이체 검색 실패: {e}")
+        return None
 
 
 @tool

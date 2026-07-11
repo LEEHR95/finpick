@@ -33,12 +33,13 @@ import cache
 import monitoring
 import bank_agents
 
-# Phoenix 추적(있으면 켜고, 없으면 조용히 통과)
-try:
-    import observability
-    observability.init_tracing("bank-web")
-except Exception as e:
-    print("[tracing] 비활성화:", e)
+# Phoenix tracing is opt-in so local tests do not stall when Phoenix is down.
+if os.environ.get("ENABLE_PHOENIX") == "1":
+    try:
+        import observability
+        observability.init_tracing("bank-web")
+    except Exception as e:
+        print("[tracing] 비활성화:", e)
 
 BANK_NAME = "FinPick"
 BANKS = ["FinPick", "국민은행", "신한은행", "우리은행", "하나은행", "카카오뱅크", "토스뱅크"]
@@ -208,6 +209,18 @@ def admin_required(f):
     return wrap
 
 
+def _safe_next_url(target):
+    """로그인 후 이동은 같은 사이트의 상대 경로만 허용한다."""
+    if not target:
+        return None
+    parsed = urlparse(target)
+    if parsed.scheme or parsed.netloc:
+        return None
+    if not target.startswith("/") or target.startswith("//"):
+        return None
+    return target
+
+
 def _mask_account_no(no):
     """이체 상대 계좌번호를 거래내역 목록에 노출할 때 중간 자리를 가린다."""
     m = re.match(r"^(\d{3}-\d{3}-)(\d{6})$", no or "")
@@ -333,11 +346,13 @@ def base_rate():
 
 def product_search(query, k=12):
     """의미검색으로 상품 목록 (예적금·대출검색 페이지용)."""
+    if not es_online():
+        return []
     qv = cache.cached_embed_query(query)
-    r = es.search(index="fss-products", size=k,
-                  knn={"field": "embedding", "query_vector": qv,
-                       "k": k, "num_candidates": 100},
-                  source_excludes=["embedding"])
+    r = es_quick().search(index="fss-products", size=k,
+                          knn={"field": "embedding", "query_vector": qv,
+                               "k": k, "num_candidates": 100},
+                          source_excludes=["embedding"])
     out = []
     for h in r["hits"]["hits"]:
         s = h["_source"]
@@ -357,11 +372,14 @@ def rag_answer(question, k=5):
     if cached is not None:
         return cached["answer"], True   # (답변, 캐시히트)
 
+    if not es_online():
+        return "현재 상품 검색엔진에 연결할 수 없어 근거 검색 답변을 생성할 수 없습니다. 잠시 후 다시 시도해 주세요.", False
+
     qv = cache.cached_embed_query(question)
-    r = es.search(index="fss-products", size=k,
-                  knn={"field": "embedding", "query_vector": qv,
-                       "k": k, "num_candidates": 100},
-                  source_excludes=["embedding"])
+    r = es_quick().search(index="fss-products", size=k,
+                          knn={"field": "embedding", "query_vector": qv,
+                               "k": k, "num_candidates": 100},
+                          source_excludes=["embedding"])
     docs = [h["_source"] for h in r["hits"]["hits"]]
     context = "\n\n".join(d.get("search_text", "") for d in docs)
     system_prompt = bank_db.render_prompt(bank_db.ensure_prompt(
@@ -529,9 +547,13 @@ def list_products_by_type(ptype, term=None, grp=None, n=20):
 
 def market_stats(ptype):
     """해당 종류의 시중 금리 통계(평균·최고·최저·개수). 핀픽 상품 비교용. (1시간 캐시)"""
+    if not es_online():
+        return None
+
     def produce():
-        r = es.search(index="fss-products", size=1000,
-                      query={"term": {"product_type": ptype}}, source_excludes=["embedding"])
+        r = es_quick().search(index="fss-products", size=1000,
+                              query={"term": {"product_type": ptype}},
+                              source_excludes=["embedding"])
         rates = []
         for h in r["hits"]["hits"]:
             v = _product_rate(h["_source"], ptype)
@@ -541,8 +563,11 @@ def market_stats(ptype):
             return None
         return {"avg": round(sum(rates) / len(rates), 2), "max": round(max(rates), 2),
                 "min": round(min(rates), 2), "n": len(rates)}
-    val, _ = cache.cached_call("mstats", cache.TTL_SEARCH, produce, ptype)
-    return val
+    try:
+        val, _ = cache.cached_call("mstats", cache.TTL_SEARCH, produce, ptype)
+        return val
+    except Exception:
+        return None
 
 
 # --------------------------- 금리 대시보드 (ES 집계) ---------------------------
@@ -555,32 +580,45 @@ DASHBOARD_TYPES = [
 
 def pension_stats():
     """연금저축은 금리가 옵션이 아니라 문서의 공시이율(btrm_prft_rate_1)에 있어 별도 집계."""
+    if not es_online():
+        return None
+
     def produce():
-        a = es.search(index="fss-products", size=0,
-                      query={"term": {"product_type": "연금저축"}},
-                      aggs={"s": {"stats": {"field": "btrm_prft_rate_1"}}})
+        a = es_quick().search(index="fss-products", size=0,
+                              query={"term": {"product_type": "연금저축"}},
+                              aggs={"s": {"stats": {"field": "btrm_prft_rate_1"}}})
         s = a["aggregations"]["s"]
         if not s["count"]:
             return None
         return {"avg": round(s["avg"], 2), "max": round(s["max"], 2),
                 "min": round(s["min"], 2), "n": s["count"]}
-    val, _ = cache.cached_call("pstats", cache.TTL_SEARCH, produce)
-    return val
+    try:
+        val, _ = cache.cached_call("pstats", cache.TTL_SEARCH, produce)
+        return val
+    except Exception:
+        return None
 
 
 def rates_dashboard_data():
     """ES 집계로 상품군(fin_grp_nm)·종류(product_type)별 상품 수를 한 번에 뽑는다. (1시간 캐시)"""
+    empty = {"groups": [], "type_counts": {}, "total": 0}
+    if not es_online():
+        return empty
+
     def produce():
-        agg = es.search(index="fss-products", size=0,
-                        aggs={"grp": {"terms": {"field": "fin_grp_nm", "size": 20}},
-                              "typ": {"terms": {"field": "product_type", "size": 20}}})
+        agg = es_quick().search(index="fss-products", size=0,
+                                aggs={"grp": {"terms": {"field": "fin_grp_nm", "size": 20}},
+                                      "typ": {"terms": {"field": "product_type", "size": 20}}})
         groups = [{"name": b["key"], "count": b["doc_count"]}
                   for b in agg["aggregations"]["grp"]["buckets"]]
         type_counts = {b["key"]: b["doc_count"] for b in agg["aggregations"]["typ"]["buckets"]}
         return {"groups": groups, "type_counts": type_counts,
                 "total": sum(type_counts.values())}
-    val, _ = cache.cached_call("ratesdash", cache.TTL_SEARCH, produce)
-    return val
+    try:
+        val, _ = cache.cached_call("ratesdash", cache.TTL_SEARCH, produce)
+        return val or empty
+    except Exception:
+        return empty
 
 
 # --------------------------- 페이지 ---------------------------
@@ -708,8 +746,9 @@ def login():
                                    request.form.get("password", ""))
         if user:
             session["user"] = user
-            if request.args.get("next"):
-                return redirect(request.args.get("next"))
+            next_url = _safe_next_url(request.args.get("next"))
+            if next_url:
+                return redirect(next_url)
             if user.get("role") == "admin":
                 return redirect(url_for("admin_dashboard"))
             return redirect(url_for("accounts"))
