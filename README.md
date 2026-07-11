@@ -34,80 +34,11 @@ FinPick은 이 불편을 대화형 인터페이스로 재정의했습니다. 다
 
 ## 시스템 아키텍처
 
-```mermaid
-flowchart TB
-    subgraph sources["입력 / 운영 / 적재 소스"]
-        direction LR
-        user["사용자 브라우저<br/>웹 화면 + FAB 상담"]
-        admin["관리자 / 운영자"]
-        agents["bank_agents.py<br/>에이전트 워크플로"]
-        fss["fetch_fss.py<br/>금융상품 수집"]
-        bok["fetch_bok.py<br/>경제지표 수집"]
-        uploader["app.py<br/>RAG 업로드 서비스 :5001"]
-        kbseed["seed_consult_kb.py<br/>상담 KB 시드"]
-    end
+![FinPick 시스템 아키텍처](docs/architecture.svg)
 
-    subgraph services["실시간 서비스 계층"]
-        direction LR
-        web["bank_web.py<br/>Flask + Socket.IO"]
-        rag["rag_core.py<br/>검색 + 프롬프트 구성"]
-        consult["bank_consult_bot.py<br/>상담 챗봇"]
-        kafka["Kafka 브로커<br/>localhost:9092"]
-        worker["이체 요청 컨슈머<br/>bank_web.py 내부"]
-    end
-
-    subgraph sinks["저장소 / 메시지 / 외부 연동"]
-        direction LR
-        db["bank_db.py<br/>SQLite"]
-        cache["cache.py<br/>TTL 캐시"]
-        mon["monitoring.py<br/>로컬 모니터링"]
-        es["Elasticsearch<br/>상품 + 이체 로그"]
-        store["store.pkl<br/>임베딩 지식 저장소"]
-        upstage["Upstage API<br/>채팅 / 임베딩 / OCR"]
-        t1["bank-consult<br/>상담 메시지 토픽"]
-        t2["bank-transfer-requests<br/>비동기 이체 요청 토픽"]
-        t3["bank-transfers<br/>이체 이벤트 토픽"]
-    end
-
-    user --> web
-    admin --> web
-    agents --> web
-    agents --> rag
-    agents --> es
-    fss --> es
-    bok --> es
-    uploader --> rag
-    kbseed --> store
-    web --> db
-    web --> cache
-    web --> mon
-    web --> es
-    web --> rag
-    web --> consult
-    web --> kafka
-    consult --> rag
-    kafka --> worker
-    worker --> db
-    worker --> es
-    rag --> store
-    rag --> upstage
-    kafka --> t1
-    kafka --> t2
-    kafka --> t3
-
-    classDef app fill:#dbeafe,stroke:#3b82f6,color:#111827,stroke-width:1.5px
-    classDef agent fill:#efe1ff,stroke:#8b5cf6,color:#111827,stroke-width:1.5px
-    classDef support fill:#ede9fe,stroke:#7c3aed,color:#111827,stroke-width:1.5px
-    classDef data fill:#dcfce7,stroke:#16a34a,color:#111827,stroke-width:1.5px
-    classDef queue fill:#ffedd5,stroke:#f97316,color:#111827,stroke-width:1.5px
-    classDef external fill:#ffe4e6,stroke:#ef4444,color:#111827,stroke-width:1.5px
-    class user,admin,web,rag,consult,worker app
-    class agents agent
-    class fss,bok,uploader,kbseed support
-    class db,cache,mon,es,store data
-    class kafka,t1,t2,t3 queue
-    class upstage external
-```
+> Client → Web/API → AI·Agent → Upstage → Messaging(Kafka) → Data → Batch적재 → Infra의 계층 흐름.
+> 오른쪽은 크로스컷(인증·세션 / 관측·운영), 상단은 핵심 원칙(**판단은 AI · 실행 결정권은 사용자**).
+> 다이어그램 생성 스크립트: [`docs/make_architecture.py`](docs/make_architecture.py)
 
 ---
 

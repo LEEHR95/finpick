@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1161" width="1500" height="1161">
+<rect x="0" y="0" width="1500" height="1161" rx="0" fill="#eef3fb" stroke="none" stroke-width="0" opacity="1"/>
+<rect x="16" y="16" width="1468" height="1129" rx="24" fill="#ffffff" stroke="#dfe6f2" stroke-width="2" opacity="1"/>
+<text x="60" y="60" font-size="30" fill="#2b2f38" font-weight="800" text-anchor="start" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">FinPick</text>
+<text x="60" y="90" font-size="15" fill="#8891a0" font-weight="400" text-anchor="start" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">대화형 AI 은행 서비스 — System Architecture</text>
+<rect x="1035" y="44" width="400" height="44" rx="12" fill="#f3f0ff" stroke="#d9d0f5" stroke-width="1.4" opacity="1"/>
+<text x="1235" y="66" font-size="14.5" fill="#6b57c9" font-weight="700" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">핵심 원칙 :  판단은 AI  ·  실행 결정권은 사용자</text>
+<rect x="1220" y="116" width="122" height="511" rx="16" fill="#9CC77F" stroke="none" stroke-width="0" opacity="1"/>
+<text x="1281" y="142" font-size="15.5" fill="#ffffff" font-weight="800" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">인증 · 세션</text>
+<rect x="1232" y="172" width="98" height="62" rx="10" fill="#ffffff" stroke="none" stroke-width="0" opacity="0.94"/>
+<text x="1281" y="194" font-size="12.5" fill="#3a3f4a" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Flask</text>
+<text x="1281" y="212" font-size="10" fill="#adb1ba" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">session</text>
+<rect x="1232" y="258" width="98" height="62" rx="10" fill="#ffffff" stroke="none" stroke-width="0" opacity="0.94"/>
+<text x="1281" y="280" font-size="12.5" fill="#3a3f4a" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">login_required</text>
+<text x="1281" y="298" font-size="10" fill="#adb1ba" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">본인 스코프</text>
+<rect x="1232" y="344" width="98" height="62" rx="10" fill="#ffffff" stroke="none" stroke-width="0" opacity="0.94"/>
+<text x="1281" y="366" font-size="12.5" fill="#3a3f4a" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">admin_required</text>
+<text x="1281" y="384" font-size="10" fill="#adb1ba" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">role=admin</text>
+<rect x="1352" y="116" width="122" height="511" rx="16" fill="#E79AA0" stroke="none" stroke-width="0" opacity="1"/>
+<text x="1413" y="142" font-size="15.5" fill="#ffffff" font-weight="800" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">관측 · 운영</text>
+<rect x="1364" y="172" width="98" height="62" rx="10" fill="#ffffff" stroke="none" stroke-width="0" opacity="0.94"/>
+<text x="1413" y="194" font-size="12.5" fill="#3a3f4a" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Phoenix</text>
+<text x="1413" y="212" font-size="10" fill="#adb1ba" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">LLM 추적</text>
+<rect x="1364" y="258" width="98" height="62" rx="10" fill="#ffffff" stroke="none" stroke-width="0" opacity="0.94"/>
+<text x="1413" y="280" font-size="12.5" fill="#3a3f4a" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Kibana</text>
+<text x="1413" y="298" font-size="10" fill="#adb1ba" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">이체 모니터링</text>
+<rect x="1364" y="344" width="98" height="62" rx="10" fill="#ffffff" stroke="none" stroke-width="0" opacity="0.94"/>
+<text x="1413" y="366" font-size="12.5" fill="#3a3f4a" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">프롬프트</text>
+<text x="1413" y="384" font-size="10" fill="#adb1ba" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">무중단 편집</text>
+<rect x="200" y="116" width="1000" height="82" rx="16" fill="#8B7FD9" stroke="none" stroke-width="0" opacity="1"/>
+<text x="104" y="148.0" font-size="17" fill="#3a3f4a" font-weight="700" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Client</text>
+<text x="104" y="169.0" font-size="11.5" fill="#9aa0ac" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Flask Templates · Socket.IO</text>
+<rect x="224.0" y="138" width="227.5" height="44" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="337.75" y="160.0" font-size="13.5" fill="#2b2f38" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">웹 화면 (Jinja)</text>
+<rect x="465.5" y="138" width="227.5" height="44" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="579.25" y="160.0" font-size="13.5" fill="#2b2f38" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">AI 은행원 챗봇 (FAB)</text>
+<rect x="707.0" y="138" width="227.5" height="44" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="820.75" y="160.0" font-size="13.5" fill="#2b2f38" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">모의투자 · 픽앤업</text>
+<rect x="948.5" y="138" width="227.5" height="44" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="1062.25" y="160.0" font-size="13.5" fill="#2b2f38" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">관리자 콘솔</text>
+<rect x="200" y="225" width="1000" height="80" rx="16" fill="#EBA96A" stroke="none" stroke-width="0" opacity="1"/>
+<text x="104" y="256.0" font-size="17" fill="#3a3f4a" font-weight="700" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Web · API</text>
+<text x="104" y="277.0" font-size="11.5" fill="#9aa0ac" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">bank_web.py · Flask + Socket.IO</text>
+<rect x="224.0" y="247" width="147.0" height="42" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="297.5" y="268.0" font-size="13.5" fill="#2b2f38" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">/accounts · /transfer</text>
+<rect x="385.0" y="247" width="147.0" height="42" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="458.5" y="268.0" font-size="13.5" fill="#2b2f38" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">/products · /rates</text>
+<rect x="546.0" y="247" width="147.0" height="42" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="619.5" y="268.0" font-size="13.5" fill="#2b2f38" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">/invest · /learn</text>
+<rect x="707.0" y="247" width="147.0" height="42" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="780.5" y="268.0" font-size="13.5" fill="#2b2f38" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">/api/agent</text>
+<rect x="868.0" y="247" width="147.0" height="42" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="941.5" y="268.0" font-size="13.5" fill="#2b2f38" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">/admin</text>
+<rect x="1029.0" y="247" width="147.0" height="42" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="1102.5" y="268.0" font-size="13.5" fill="#2b2f38" font-weight="500" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Socket.IO 상담</text>
+<rect x="200" y="332" width="1000" height="182" rx="16" fill="#46C0BC" stroke="none" stroke-width="0" opacity="1"/>
+<text x="104" y="414.0" font-size="17" fill="#3a3f4a" font-weight="700" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">AI · Agent</text>
+<text x="104" y="435.0" font-size="11.5" fill="#9aa0ac" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">bank_agents.py · LangGraph</text>
+<rect x="224.0" y="354" width="227.5" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="337.75" y="374.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">고객 에이전트 (계좌·상담)</text>
+<text x="337.75" y="392.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">get·prepare·confirm</text>
+<rect x="465.5" y="354" width="227.5" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="579.25" y="374.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">이상거래탐지</text>
+<text x="579.25" y="392.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">ES 이체로그 집계</text>
+<rect x="707.0" y="354" width="227.5" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="820.75" y="374.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">여신심사</text>
+<text x="820.75" y="392.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">규칙 스코어링</text>
+<rect x="948.5" y="354" width="227.5" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="1062.25" y="374.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">컴플라이언스</text>
+<text x="1062.25" y="392.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">AML 스크리닝</text>
+<rect x="224.0" y="420" width="308.0" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="378.0" y="440.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">bank_consult_bot</text>
+<text x="378.0" y="458.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">상담 챗봇</text>
+<rect x="546.0" y="420" width="308.0" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="700.0" y="440.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">rag_core</text>
+<text x="700.0" y="458.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">RAG 검색·프롬프트</text>
+<rect x="868.0" y="420" width="308.0" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="1022.0" y="440.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">프롬프트 매니저</text>
+<text x="1022.0" y="458.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">도메인별 프롬프트·변수</text>
+<text x="700.0" y="490" font-size="12.5" fill="#0d6b64" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">판단은 AI · 실행 결정권은 사용자  —  prepare → 확인 → confirm</text>
+<rect x="200" y="541" width="1000" height="86" rx="16" fill="#8FC97A" stroke="none" stroke-width="0" opacity="1"/>
+<text x="104" y="575.0" font-size="17" fill="#3a3f4a" font-weight="700" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">External AI</text>
+<text x="104" y="596.0" font-size="11.5" fill="#9aa0ac" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Upstage</text>
+<rect x="224.0" y="563" width="469.0" height="48" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="458.5" y="579.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Upstage Solar Pro 2</text>
+<text x="458.5" y="597.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">채팅 · 임베딩</text>
+<rect x="707.0" y="563" width="469.0" height="48" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="941.5" y="579.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Upstage Document Parse</text>
+<text x="941.5" y="597.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">OCR</text>
+<rect x="200" y="654" width="1000" height="94" rx="16" fill="#E79A80" stroke="none" stroke-width="0" opacity="1"/>
+<text x="104" y="692.0" font-size="17" fill="#3a3f4a" font-weight="700" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Messaging</text>
+<text x="104" y="713.0" font-size="11.5" fill="#9aa0ac" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Kafka · localhost:9092</text>
+<rect x="224.0" y="676" width="227.5" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="337.75" y="696.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">bank-transfers</text>
+<text x="337.75" y="714.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">이체 이벤트(28필드)</text>
+<rect x="465.5" y="676" width="227.5" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="579.25" y="696.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">bank-transfer-requests</text>
+<text x="579.25" y="714.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">비동기 이체 큐</text>
+<rect x="707.0" y="676" width="227.5" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="820.75" y="696.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">bank-consult</text>
+<text x="820.75" y="714.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">상담 메시지</text>
+<rect x="948.5" y="676" width="227.5" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="1062.25" y="696.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">이체 색인 컨슈머</text>
+<text x="1062.25" y="714.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Kafka → ES</text>
+<rect x="200" y="775" width="1000" height="96" rx="16" fill="#6E86D6" stroke="none" stroke-width="0" opacity="1"/>
+<text x="104" y="814.0" font-size="17" fill="#3a3f4a" font-weight="700" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Data · Search</text>
+<text x="104" y="835.0" font-size="11.5" fill="#9aa0ac" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Storage · Search · Cache</text>
+<rect x="224.0" y="797" width="227.5" height="58" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="337.75" y="818.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">SQLite</text>
+<text x="337.75" y="836.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">계좌·거래·포인트</text>
+<rect x="465.5" y="797" width="227.5" height="58" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="579.25" y="818.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Elasticsearch</text>
+<text x="579.25" y="836.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">상품 1,384건 · 이체로그</text>
+<rect x="707.0" y="797" width="227.5" height="58" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="820.75" y="818.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Redis</text>
+<text x="820.75" y="836.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">TTL 캐시 (195× ↑)</text>
+<rect x="948.5" y="797" width="227.5" height="58" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="1062.25" y="818.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">store.pkl</text>
+<text x="1062.25" y="836.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">상담 KB 임베딩</text>
+<rect x="200" y="898" width="1000" height="94" rx="16" fill="#C9B98F" stroke="none" stroke-width="0" opacity="1"/>
+<text x="104" y="936.0" font-size="17" fill="#3a3f4a" font-weight="700" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Batch 적재</text>
+<text x="104" y="957.0" font-size="11.5" fill="#9aa0ac" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Data Ingestion (1회)</text>
+<rect x="224.0" y="920" width="227.5" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="337.75" y="940.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">fetch_fss.py</text>
+<text x="337.75" y="958.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">금감원 공시상품</text>
+<rect x="465.5" y="920" width="227.5" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="579.25" y="940.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">fetch_bok.py</text>
+<text x="579.25" y="958.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">경제지표</text>
+<rect x="707.0" y="920" width="227.5" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="820.75" y="940.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">index_to_es.py</text>
+<text x="820.75" y="958.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">ES 색인</text>
+<rect x="948.5" y="920" width="227.5" height="56" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="1062.25" y="940.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">seed_consult_kb.py</text>
+<text x="1062.25" y="958.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">상담 KB 시드</text>
+<rect x="200" y="1019" width="1000" height="86" rx="16" fill="#A7C6EE" stroke="none" stroke-width="0" opacity="1"/>
+<text x="104" y="1053.0" font-size="17" fill="#3a3f4a" font-weight="700" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Infra · Ops</text>
+<text x="104" y="1074.0" font-size="11.5" fill="#9aa0ac" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Docker · Runtime</text>
+<rect x="224.0" y="1041" width="227.5" height="48" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="337.75" y="1057.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Docker</text>
+<text x="337.75" y="1075.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">컨테이너 5종</text>
+<rect x="465.5" y="1041" width="227.5" height="48" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="579.25" y="1057.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Kibana</text>
+<text x="579.25" y="1075.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">이상거래 모니터링</text>
+<rect x="707.0" y="1041" width="227.5" height="48" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="820.75" y="1057.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">Phoenix</text>
+<text x="820.75" y="1075.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">LLM 호출 추적</text>
+<rect x="948.5" y="1041" width="227.5" height="48" rx="10" fill="#ffffff" stroke="#d7dbe3" stroke-width="1.4" opacity="1"/>
+<text x="1062.25" y="1057.0" font-size="13.5" fill="#2b2f38" font-weight="600" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">monitoring.py</text>
+<text x="1062.25" y="1075.0" font-size="10.5" fill="#7b8290" font-weight="400" text-anchor="middle" font-family="'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif" dominant-baseline="middle">관리자 대시보드</text>
+<line x1="700.0" y1="199" x2="700.0" y2="217" stroke="#8a93a3" stroke-width="2.4"/>
+<path d="M694.0,216 L706.0,216 L700.0,225 Z" fill="#8a93a3"/>
+<line x1="700.0" y1="306" x2="700.0" y2="324" stroke="#8a93a3" stroke-width="2.4"/>
+<path d="M694.0,323 L706.0,323 L700.0,332 Z" fill="#8a93a3"/>
+<line x1="700.0" y1="515" x2="700.0" y2="533" stroke="#8a93a3" stroke-width="2.4"/>
+<path d="M694.0,532 L706.0,532 L700.0,541 Z" fill="#8a93a3"/>
+<line x1="700.0" y1="628" x2="700.0" y2="646" stroke="#c98b7f" stroke-width="2.4" stroke-dasharray="6 5"/>
+<path d="M694.0,645 L706.0,645 L700.0,654 Z" fill="#c98b7f"/>
+<line x1="700.0" y1="749" x2="700.0" y2="767" stroke="#8a93a3" stroke-width="2.4"/>
+<path d="M694.0,766 L706.0,766 L700.0,775 Z" fill="#8a93a3"/>
+<line x1="700.0" y1="872" x2="700.0" y2="890" stroke="#8a93a3" stroke-width="2.4"/>
+<path d="M694.0,889 L706.0,889 L700.0,898 Z" fill="#8a93a3"/>
+<line x1="700.0" y1="993" x2="700.0" y2="1011" stroke="#8a93a3" stroke-width="2.4"/>
+<path d="M694.0,1010 L706.0,1010 L700.0,1019 Z" fill="#8a93a3"/>
+</svg>

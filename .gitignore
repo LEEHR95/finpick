@@ -27,3 +27,6 @@ REPORT_*.md
 bank_data_report.html
 bank_data_report.ipynb
 .pytest_cache/
+
+# 아키텍처 미리보기 산출물
+docs/_arch_preview.*
